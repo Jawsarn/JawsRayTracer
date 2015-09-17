@@ -32,8 +32,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FXC Include="..\Bin\Shaders\BasicCompute.hlsl">
+    <FxCompile Include="..\Bin\Shaders\CSCreateRays.hlsl">
       <Filter>Shaders</Filter>
-    </FXC>
+    </FxCompile>
   </ItemGroup>
 </Project>
