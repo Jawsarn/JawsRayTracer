@@ -10,6 +10,8 @@
 #include "ComputeHelp.h"
 #include "D3D11Timer.h"
 #include <DirectXMath.h>
+#include "Camera.h"
+#include "BufferHelp.h"
 
 /*	DirectXTex library - for usage info, see http://directxtex.codeplex.com/
 	
@@ -53,15 +55,11 @@ ComputeWrap*			g_ComputeSys			= NULL;
 ComputeShader*			g_ComputeShader			= NULL;
 
 D3D11Timer*				g_Timer					= NULL;
+Camera*					g_Camera				= NULL;
 
-ComputeBuffer*			g_VertexBuffer;
+ComputeBuffer*			g_VertexBuffer			= NULL;
+ID3D11Buffer*			g_PerFrameBuffer		= NULL;
 
-struct Vertex	
-{
-	XMFLOAT3 Position;
-	XMFLOAT3 Normal;
-	XMFLOAT2 TexCord;
-};
 
 int g_Width, g_Height;
 
@@ -181,9 +179,16 @@ HRESULT Init()
 	g_ComputeShader = g_ComputeSys->CreateComputeShader(_T("CSCreateRays.hlsl"), NULL, "CS", NULL);
 	g_Timer = new D3D11Timer(g_Device, g_DeviceContext);
 
+	//create camera
+	g_Camera = new Camera();
+	g_Camera->LookTo(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 1), XMFLOAT3(0, 1, 0));
+	g_Camera->SetPerspective(PI / 4.0f, (float)g_Width, (float)g_Height, 0.1f, 10000.0f);
+
 	hr = InitializeBuffers();
 	if (FAILED(hr))
 		return hr;
+
+
 
 	return S_OK;
 }
@@ -200,6 +205,13 @@ HRESULT InitializeBuffers()
 	};
 
 	g_VertexBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(Vertex), 3, false, true, t_Vertices);
+
+	PerFrameBuffer p_FrameBuffer;
+	p_FrameBuffer.invViewProj = g_Camera->GetInvViewProj();
+	p_FrameBuffer.screenHeight = (float)g_Height;
+	p_FrameBuffer.screenWidth = (float)g_Width;
+
+	g_PerFrameBuffer = g_ComputeSys->CreateConstantBuffer(sizeof(PerFrameBuffer), &p_FrameBuffer);
 
 	return hr;
 }
