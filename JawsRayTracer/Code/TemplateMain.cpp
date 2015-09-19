@@ -178,7 +178,7 @@ HRESULT Init()
 
 	//create helper sys and compute shader instance
 	g_ComputeSys = new ComputeWrap(g_Device, g_DeviceContext);
-	g_ComputeShader = g_ComputeSys->CreateComputeShader(_T("../Shaders/CSCreateRays.hlsl"), NULL, "CS", NULL);
+	g_ComputeShader = g_ComputeSys->CreateComputeShader(_T("CSCreateRays.hlsl"), NULL, "CS", NULL);
 	g_Timer = new D3D11Timer(g_Device, g_DeviceContext);
 
 	hr = InitializeBuffers();

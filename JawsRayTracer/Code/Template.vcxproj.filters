@@ -32,7 +32,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Bin\Shaders\CSCreateRays.hlsl">
+    <FxCompile Include="CSCreateRays.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
