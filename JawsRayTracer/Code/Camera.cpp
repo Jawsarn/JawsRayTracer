@@ -66,3 +66,14 @@ XMMATRIX Camera::GetProj()
 	return XMLoadFloat4x4(&m_Proj);
 }
 
+
+XMMATRIX Camera::GetInvView()
+{
+	return XMMatrixInverse(nullptr, GetView());
+}
+
+XMMATRIX Camera::GetInvProj()
+{
+	return XMMatrixInverse(nullptr, GetProj());
+}
+

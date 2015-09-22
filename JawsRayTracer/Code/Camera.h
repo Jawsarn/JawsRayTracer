@@ -18,6 +18,8 @@ public:
 	XMMATRIX GetInvViewProj();
 	XMMATRIX GetView();
 	XMMATRIX GetProj();
+	XMMATRIX GetInvView();
+	XMMATRIX GetInvProj();
 
 private:
 	XMFLOAT4X4 m_View;

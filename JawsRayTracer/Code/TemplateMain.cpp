@@ -52,11 +52,13 @@ ID3D11DeviceContext*	g_DeviceContext			= NULL;
 ID3D11UnorderedAccessView*  g_BackBufferUAV		= NULL;  // compute output
 
 ComputeWrap*			g_ComputeSys			= NULL;
-ComputeShader*			g_ComputeShader			= NULL;
+ComputeShader*			g_CSCreateRays			= NULL;
+ComputeShader*			g_CSIntersect			= NULL;
 
 D3D11Timer*				g_Timer					= NULL;
 Camera*					g_Camera				= NULL;
 
+ComputeBuffer*			g_RayBuffer				= NULL;
 ComputeBuffer*			g_VertexBuffer			= NULL;
 ID3D11Buffer*			g_PerFrameBuffer		= NULL;
 
@@ -176,7 +178,8 @@ HRESULT Init()
 
 	//create helper sys and compute shader instance
 	g_ComputeSys = new ComputeWrap(g_Device, g_DeviceContext);
-	g_ComputeShader = g_ComputeSys->CreateComputeShader(_T("CSCreateRays.hlsl"), NULL, "CS", NULL);
+	g_CSCreateRays = g_ComputeSys->CreateComputeShader(_T("CSCreateRays.hlsl"), NULL, "CS", NULL);
+	g_CSIntersect = g_ComputeSys->CreateComputeShader(_T("CSIntersect.hlsl"), NULL, "CS", NULL);
 	g_Timer = new D3D11Timer(g_Device, g_DeviceContext);
 
 	//create camera
@@ -197,19 +200,26 @@ HRESULT InitializeBuffers()
 {
 	HRESULT hr = S_OK;
 
+
+	//Create vertex buffer
 	Vertex t_Vertices[3] =
 	{
 		{	XMFLOAT3(-1,0,0), XMFLOAT3(0,0,0), XMFLOAT2(0,0) },
 		{	XMFLOAT3(1,0,0), XMFLOAT3(0,0,0), XMFLOAT2(0,0)	},
 		{	XMFLOAT3(0,-1,0), XMFLOAT3(0,0,0), XMFLOAT2(0,0) },
 	};
-
 	g_VertexBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(Vertex), 3, false, true, t_Vertices);
 
+
+	//create ray buffer
+	g_RayBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(Ray), g_Height*g_Width, true, true, nullptr);
+
+
+	//create per frame buffer
 	PerFrameBuffer p_FrameBuffer;
-	p_FrameBuffer.invViewProj = g_Camera->GetInvViewProj();
-	p_FrameBuffer.screenHeight = (float)g_Height;
-	p_FrameBuffer.screenWidth = (float)g_Width;
+	p_FrameBuffer.invView = XMMatrixTranspose(g_Camera->GetView());
+	p_FrameBuffer.invProj = XMMatrixTranspose(g_Camera->GetProj());
+	p_FrameBuffer.ScreenDimensions = XMFLOAT2((float)g_Height, (float)g_Width);
 	p_FrameBuffer.filler = XMFLOAT2(0, 0);
 
 	g_PerFrameBuffer = g_ComputeSys->CreateConstantBuffer(sizeof(PerFrameBuffer), &p_FrameBuffer);
@@ -225,27 +235,53 @@ HRESULT Update(float deltaTime)
 HRESULT Render(float deltaTime)
 {
 	//set textures
-	ID3D11UnorderedAccessView* uav[] = { g_BackBufferUAV , g_VertexBuffer->GetUnorderedAccessView()};
-	g_DeviceContext->CSSetUnorderedAccessViews(0, 2, uav, NULL);
+	//ID3D11UnorderedAccessView* uav[] = { g_BackBufferUAV , g_VertexBuffer->GetUnorderedAccessView()};
+	//g_DeviceContext->CSSetUnorderedAccessViews(0, 2, uav, NULL);
+	
+	ID3D11UnorderedAccessView* uav[] = { g_RayBuffer->GetUnorderedAccessView() };
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
+
+	//clear SRV
+	ID3D11ShaderResourceView* tEmpty[] = { nullptr , nullptr};
+	g_DeviceContext->CSSetShaderResources(0, 2, tEmpty);
 
 	//set constant buffers
 	g_DeviceContext->CSSetConstantBuffers(0, 1, &g_PerFrameBuffer);
 
 	//set shader
-	g_ComputeShader->Set();
+	g_CSCreateRays->Set();
 
 	
 	//start time
 	g_Timer->Start();
 
-	//draw call
-	g_DeviceContext->Dispatch( 25, 25, 1 );
+	//calc num of thread groups
+	UINT x = ceil((float)g_Width / (float)THREAD_GROUP_SIZE_X);
+	UINT y = ceil((float)g_Height / (float)THREAD_GROUP_SIZE_Y);
 
+	//draw call
+	g_DeviceContext->Dispatch( x, y, 1 );
+
+	//unset stuff
+	g_CSCreateRays->Unset();
+	g_CSIntersect->Set();
+
+	//set uav
+	ID3D11UnorderedAccessView* uav2[] = { g_BackBufferUAV };
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav2, NULL);
+
+	//set srv
+	ID3D11ShaderResourceView* srv[] = { g_RayBuffer->GetResourceView(), g_VertexBuffer->GetResourceView() };
+	g_DeviceContext->CSSetShaderResources(0, 2, srv);
+
+	g_DeviceContext->Dispatch(x, y, 1);
+
+
+	g_CSIntersect->Unset();
 	//stop time
 	g_Timer->Stop();
 
-	//unset stuff
-	g_ComputeShader->Unset();
+	
 
 	//swap backbuffer to front
 	if(FAILED(g_SwapChain->Present( 0, 0 )))
