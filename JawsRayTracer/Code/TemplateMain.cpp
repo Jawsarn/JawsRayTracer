@@ -63,6 +63,9 @@ ComputeBuffer*			g_VertexBuffer			= NULL;
 ID3D11Buffer*			g_PerFrameBuffer		= NULL;
 
 
+float					g_NumOfVertices			= 0.0f;
+
+
 int g_Width, g_Height;
 
 //--------------------------------------------------------------------------------------
@@ -208,7 +211,9 @@ HRESULT InitializeBuffers()
 		{	XMFLOAT3(1,0,0), XMFLOAT3(0,0,0), XMFLOAT2(0,0)	},
 		{	XMFLOAT3(0,-1,0), XMFLOAT3(0,0,0), XMFLOAT2(0,0) },
 	};
-	g_VertexBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(Vertex), 3, false, true, t_Vertices);
+
+	g_NumOfVertices = ARRAYSIZE(t_Vertices);
+	g_VertexBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(Vertex), 3, true, true, t_Vertices);
 
 
 	//create ray buffer
@@ -220,7 +225,8 @@ HRESULT InitializeBuffers()
 	p_FrameBuffer.invView = XMMatrixTranspose(g_Camera->GetView());
 	p_FrameBuffer.invProj = XMMatrixTranspose(g_Camera->GetProj());
 	p_FrameBuffer.ScreenDimensions = XMFLOAT2((float)g_Height, (float)g_Width);
-	p_FrameBuffer.filler = XMFLOAT2(0, 0);
+	p_FrameBuffer.NumOfVertices = g_NumOfVertices;
+	p_FrameBuffer.filler = 0.0f;
 
 	g_PerFrameBuffer = g_ComputeSys->CreateConstantBuffer(sizeof(PerFrameBuffer), &p_FrameBuffer);
 
@@ -242,8 +248,8 @@ HRESULT Render(float deltaTime)
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 
 	//clear SRV
-	ID3D11ShaderResourceView* tEmpty[] = { nullptr , nullptr};
-	g_DeviceContext->CSSetShaderResources(0, 2, tEmpty);
+	ID3D11ShaderResourceView* srv[] = { nullptr , nullptr};
+	g_DeviceContext->CSSetShaderResources(0, 2, srv);
 
 	//set constant buffers
 	g_DeviceContext->CSSetConstantBuffers(0, 1, &g_PerFrameBuffer);
@@ -271,14 +277,23 @@ HRESULT Render(float deltaTime)
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav2, NULL);
 
 	//set srv
-	ID3D11ShaderResourceView* srv[] = { g_RayBuffer->GetResourceView(), g_VertexBuffer->GetResourceView() };
-	g_DeviceContext->CSSetShaderResources(0, 2, srv);
+	ID3D11ShaderResourceView* srv2[] = { g_RayBuffer->GetResourceView(), g_VertexBuffer->GetResourceView() };
+	g_DeviceContext->CSSetShaderResources(0, 2, srv2);
+
 
 	g_DeviceContext->Dispatch(x, y, 1);
 
 
 	g_CSIntersect->Unset();
 	//stop time
+
+	ID3D11UnorderedAccessView* uav3[] = { nullptr };
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav2, NULL);
+
+	//set srv
+	ID3D11ShaderResourceView* srv3[] = { nullptr, nullptr };
+	g_DeviceContext->CSSetShaderResources(0, 2, srv3);
+
 	g_Timer->Stop();
 
 	

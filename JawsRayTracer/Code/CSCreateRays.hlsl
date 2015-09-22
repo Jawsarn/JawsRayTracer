@@ -13,6 +13,7 @@ Create rays from screencords with help of view proj matrices
 
 struct Ray
 {
+	float2 Position;
 	float2 Direction;
 	float3 Color;
 };
@@ -22,8 +23,11 @@ cbuffer PerFrameBuffer : register(b0)
 	matrix View;
 	matrix Proj;
 	float2 ScreenDimensions; //width height
-	float2 filler;
+	uint NumOfVertices;
+	uint filler;
 };
+
+
 
 RWStructuredBuffer<Ray> outputRays : register(u0);
 
@@ -47,6 +51,8 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 
 
 	Ray t_Ray;
+	//t_Ray.Direction = screenSpaceRay;
+	t_Ray.Position = t_ScreenPos;
 	t_Ray.Direction = float2(0.0f, 0.0f);
 	t_Ray.Color = float3(0.0f, 1.0f, 0.0f);
 	outputRays[outIndex] = t_Ray;
