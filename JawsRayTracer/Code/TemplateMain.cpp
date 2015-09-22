@@ -210,6 +210,7 @@ HRESULT InitializeBuffers()
 	p_FrameBuffer.invViewProj = g_Camera->GetInvViewProj();
 	p_FrameBuffer.screenHeight = (float)g_Height;
 	p_FrameBuffer.screenWidth = (float)g_Width;
+	p_FrameBuffer.filler = XMFLOAT2(0, 0);
 
 	g_PerFrameBuffer = g_ComputeSys->CreateConstantBuffer(sizeof(PerFrameBuffer), &p_FrameBuffer);
 
@@ -223,20 +224,34 @@ HRESULT Update(float deltaTime)
 
 HRESULT Render(float deltaTime)
 {
+	//set textures
 	ID3D11UnorderedAccessView* uav[] = { g_BackBufferUAV , g_VertexBuffer->GetUnorderedAccessView()};
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 2, uav, NULL);
 
+	//set constant buffers
+	g_DeviceContext->CSSetConstantBuffers(0, 1, &g_PerFrameBuffer);
+
+	//set shader
 	g_ComputeShader->Set();
+
 	
+	//start time
 	g_Timer->Start();
+
+	//draw call
 	g_DeviceContext->Dispatch( 25, 25, 1 );
+
+	//stop time
 	g_Timer->Stop();
+
+	//unset stuff
 	g_ComputeShader->Unset();
 
+	//swap backbuffer to front
 	if(FAILED(g_SwapChain->Present( 0, 0 )))
 		return E_FAIL;
 
-
+	//debug info
 	char title[256];
 	sprintf_s(
 		title,
