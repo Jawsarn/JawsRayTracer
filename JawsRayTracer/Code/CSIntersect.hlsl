@@ -70,20 +70,20 @@ int CheckCollision(Ray pRay, uint startIndex)
 	float3 edge0 = A.Position - B.Position;
 	float3 vp0 = P - A.Position;
 	PerVec = cross(edge0, vp0);
-	result = min(result, dot(norm, C));
+	result = min(result, dot(norm, C.Position));
 
 
 	float3 edge1 = C.Position - B.Position;
 	float3 vp1 = P - B.Position;
 	PerVec = cross(edge1, vp1);
-	float u = (length(C) / 2.0f) / area;
-	result = min(result, dot(norm, C));
+	float u = (length(C.Position) / 2.0f) / area;
+	result = min(result, dot(norm, C.Position));
 
 	float3 edge2 = A.Position - C.Position;
 	float3 vp2 = P - C.Position;
 	PerVec = cross(edge2, vp2);
-	float w = (length(C) / 2.0f) / area;
-	result = min(result, dot(norm, C));
+	float w = (length(C.Position) / 2.0f) / area;
+	result = min(result, dot(norm, C.Position));
 
 	if (result == 0)
 	{
@@ -108,7 +108,7 @@ void CS( uint3 threadID : SV_DispatchThreadID )
 	//check closest triangle 
 	for (uint i = 0; i < NumOfVertices; i += 3)
 	{
-		ClosestIndex = max(ClosestIndex, CheckCollision(i));
+		ClosestIndex = max(ClosestIndex, CheckCollision(myRay, i));
 	}
 
 	Vertex ver = Vertices[0];
