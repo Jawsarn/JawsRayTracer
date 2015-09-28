@@ -4,7 +4,7 @@
 struct Ray
 {
 	float2 Position;
-	float2 Direction;
+	float3 Direction;
 	float3 Color;
 };
 
@@ -58,7 +58,7 @@ int CheckCollision(Ray pRay, uint startIndex)
 
 
 
-	float3 P = float3(pRay.Position, 0) + t* float3(pRay.Direction, 0); //middle
+	float3 P = float3(pRay.Position, 0) + t* pRay.Direction; //middle
 
 
 	float3 PerVec; //vector perpendicular to triangle's plane

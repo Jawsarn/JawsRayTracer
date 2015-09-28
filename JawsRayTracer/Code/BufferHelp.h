@@ -23,6 +23,6 @@ struct Vertex
 struct Ray
 {
 	XMFLOAT2 Position;
-	XMFLOAT2 Direction;
+	XMFLOAT3 Direction;
 	XMFLOAT3 Color;
 };
