@@ -53,7 +53,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	Ray t_Ray;
 	//t_Ray.Direction = screenSpaceRay;
 	t_Ray.Position = t_ScreenPos;
-	t_Ray.Direction = float3(0.0f, 0.0f, 0.0f);
+	t_Ray.Direction = float3(0.0f, 0.0f, 1.0f);
 	t_Ray.Color = float3(0.0f, 1.0f, 0.0f);
 	outputRays[outIndex] = t_Ray;
 }
