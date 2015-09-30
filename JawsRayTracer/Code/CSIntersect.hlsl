@@ -12,7 +12,8 @@ struct Vertex
 {
 	float3 Position;
 	float3 Normal;
-	float2 TexCord;
+	//float2 TexCord;
+	float3 Color;
 };
 
 cbuffer PerFrameBuffer : register(b0)
@@ -33,9 +34,8 @@ StructuredBuffer<Vertex> Vertices : register(t1);
 
 static const float kEpsilon = 1e-8;
 
-bool CheckCollision(Ray pRay, uint startIndex)
+bool CheckCollision(Ray pRay, uint startIndex, out float t, out float u, out float v)
 {
-	float u, t, v;
 	Vertex A = Vertices[startIndex];
 	Vertex B = Vertices[startIndex + 1];
 	Vertex C = Vertices[startIndex + 2];
@@ -71,8 +71,6 @@ bool CheckCollision(Ray pRay, uint startIndex)
 	}
 
 	t = dot(AtoC, qVec)*invDet;
-	t = 3.0f;
-	v = 3.0f;
 
 	return true;
 }
@@ -86,18 +84,19 @@ void CS( uint3 threadID : SV_DispatchThreadID )
 
 	Ray myRay = Rays[index];
 
-	float4 finalColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float3 finalColor = float3(0.0f, 0.0f, 0.0f);
 
 	//check closest triangle 
 	for (uint i = 0; i < NumOfVertices; i += 3)
 	{
 		float t, u, v;
-		if (CheckCollision(myRay, i))
+		if (CheckCollision(myRay, i, t, u, v))
 		{
-			finalColor = float4(1.0f, 1.0f, 1.0f, 0.0f);
+			float w = (1 - u - v);
+			finalColor += w * Vertices[i].Color + u * Vertices[i + 1].Color + v * Vertices[i + 2].Color;
 		}
 	}
 
 
-	output[threadID.xy] = finalColor;
+	output[threadID.xy] = float4(finalColor ,0.0f);
 }

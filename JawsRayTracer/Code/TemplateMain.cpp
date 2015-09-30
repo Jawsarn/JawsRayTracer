@@ -111,8 +111,8 @@ HRESULT Init()
 	D3D_DRIVER_TYPE driverTypes[] = 
 	{
 		//D3D_DRIVER_TYPE_HARDWARE,
-		//D3D_DRIVER_TYPE_WARP,
-		D3D_DRIVER_TYPE_REFERENCE,
+		D3D_DRIVER_TYPE_WARP,
+		//D3D_DRIVER_TYPE_REFERENCE,
 		
 	};
 	UINT numDriverTypes = sizeof(driverTypes) / sizeof(driverTypes[0]);
@@ -209,9 +209,9 @@ HRESULT InitializeBuffers()
 	//Create vertex buffer
 	Vertex t_Vertices[3] =
 	{
-		{	XMFLOAT3(-0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0,0) },
-		{	XMFLOAT3(0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0,0)	},
-		{	XMFLOAT3(0,-0.25f,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0,0) },
+		{	XMFLOAT3(-0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT3(1.0f,0,0) },
+		{	XMFLOAT3(0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT3(0,1.0f,0)	},
+		{	XMFLOAT3(0,-0.25f,5.0f), XMFLOAT3(0,0,0), XMFLOAT3(0,0,1.0f) },
 	};
 
 	g_NumOfVertices = ARRAYSIZE(t_Vertices);
