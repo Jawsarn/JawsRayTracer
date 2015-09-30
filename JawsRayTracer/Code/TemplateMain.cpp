@@ -110,8 +110,10 @@ HRESULT Init()
 
 	D3D_DRIVER_TYPE driverTypes[] = 
 	{
-		D3D_DRIVER_TYPE_HARDWARE,
+		//D3D_DRIVER_TYPE_HARDWARE,
+		//D3D_DRIVER_TYPE_WARP,
 		D3D_DRIVER_TYPE_REFERENCE,
+		
 	};
 	UINT numDriverTypes = sizeof(driverTypes) / sizeof(driverTypes[0]);
 
