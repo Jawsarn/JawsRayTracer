@@ -187,7 +187,7 @@ HRESULT Init()
 
 	//create camera
 	g_Camera = new Camera();
-	g_Camera->LookTo(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 1), XMFLOAT3(0, 1, 0));
+	g_Camera->LookTo(XMFLOAT3(0, 0, -30), XMFLOAT3(0, 0, 1), XMFLOAT3(0, 1, 0));
 	g_Camera->SetPerspective(PI / 4.0f, (float)g_Width, (float)g_Height, 0.1f, 10000.0f);
 
 	hr = InitializeBuffers();
@@ -207,9 +207,9 @@ HRESULT InitializeBuffers()
 	//Create vertex buffer
 	Vertex t_Vertices[3] =
 	{
-		{	XMFLOAT3(-0.25f,0,10.0f), XMFLOAT3(0,0,0), XMFLOAT2(0,0) },
-		{	XMFLOAT3(0.25f,0,10.0f), XMFLOAT3(0,0,0), XMFLOAT2(0,0)	},
-		{	XMFLOAT3(0,-0.25f,10.0f), XMFLOAT3(0,0,0), XMFLOAT2(0,0) },
+		{	XMFLOAT3(-0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0,0) },
+		{	XMFLOAT3(0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0,0)	},
+		{	XMFLOAT3(0,-0.25f,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0,0) },
 	};
 
 	g_NumOfVertices = ARRAYSIZE(t_Vertices);
@@ -222,7 +222,7 @@ HRESULT InitializeBuffers()
 
 	//create per frame buffer
 	PerFrameBuffer p_FrameBuffer;
-	p_FrameBuffer.invView = XMMatrixTranspose(g_Camera->GetView());
+	//p_FrameBuffer.invView = XMMatrixTranspose(g_Camera->GetView());
 	p_FrameBuffer.invProj = XMMatrixTranspose(g_Camera->GetProj());
 	p_FrameBuffer.ScreenDimensions = XMFLOAT2((float)g_Height, (float)g_Width);
 	p_FrameBuffer.NumOfVertices = g_NumOfVertices;

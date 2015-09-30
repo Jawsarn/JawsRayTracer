@@ -5,7 +5,7 @@
 
 struct PerFrameBuffer
 {
-	XMMATRIX invView;
+	//XMMATRIX invView;
 	XMMATRIX invProj;
 	XMFLOAT2 ScreenDimensions;
 	unsigned int NumOfVertices;
@@ -22,7 +22,7 @@ struct Vertex
 
 struct Ray
 {
-	XMFLOAT2 Position;
+	XMFLOAT3 Position;
 	XMFLOAT3 Direction;
 	XMFLOAT3 Color;
 };

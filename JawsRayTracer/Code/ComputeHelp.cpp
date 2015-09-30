@@ -50,14 +50,14 @@ bool ComputeShader::Init(TCHAR* shaderFile, TCHAR* blobFileAppendix, char* pFunc
 		_tfopen_s(&fShaderBlob, blobFilename, _T("rb"));
 	}
 
-	DWORD dwShaderFlags =	D3DCOMPILE_ENABLE_STRICTNESS |
+	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS |
 							D3DCOMPILE_IEEE_STRICTNESS |
 							//D3DCOMPILE_WARNINGS_ARE_ERRORS |
 							D3DCOMPILE_PREFER_FLOW_CONTROL;
 	
 #if defined(DEBUG) || defined(_DEBUG)
 	dwShaderFlags |= D3DCOMPILE_DEBUG;
-	dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+	//dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 #else
 	dwShaderFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 #endif
