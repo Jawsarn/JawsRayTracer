@@ -438,7 +438,7 @@ ID3D11Texture2D* ComputeWrap::CreateStagingTexture(ID3D11Texture2D* pTexture)
     return pStagingTex;
 }
 
-ID3D11Buffer* ComputeWrap::CreateConstantBuffer(UINT uSize, VOID* pInitData, char* debugName)
+ID3D11Buffer* ComputeWrap::CreateConstantBuffer(UINT uSize, VOID* pInitData, D3D11_USAGE cpuGpuUsage, UINT cpuAcessFlag, char* debugName )
 {
 	ID3D11Buffer* pBuffer = nullptr;
 
@@ -448,10 +448,10 @@ ID3D11Buffer* ComputeWrap::CreateConstantBuffer(UINT uSize, VOID* pInitData, cha
 
 	bool addMod = uSize % 16 != 0 ? true : false;
 	cbDesc.ByteWidth = uSize + (addMod ? (16 - uSize % 16) : 0);
-	cbDesc.CPUAccessFlags = 0;
+	cbDesc.CPUAccessFlags = cpuAcessFlag;
 	cbDesc.MiscFlags = 0;
 	cbDesc.StructureByteStride = 0;
-	cbDesc.Usage = D3D11_USAGE_DEFAULT;
+	cbDesc.Usage = cpuGpuUsage;
 
     if(pInitData)
     {

@@ -60,10 +60,14 @@ Camera*					g_Camera				= NULL;
 
 ComputeBuffer*			g_RayBuffer				= NULL;
 ComputeBuffer*			g_VertexBuffer			= NULL;
+ComputeBuffer*			g_SphereBuffer			= NULL;
 ID3D11Buffer*			g_PerFrameBuffer		= NULL;
 
 
-float					g_NumOfVertices			= 0.0f;
+UINT					g_NumOfVertices			= 0;
+UINT					g_NumOfSpheres			= 0;
+float					dt						= 0;
+XMFLOAT2				g_LastMousePos			= XMFLOAT2(0, 0);
 
 
 int g_Width, g_Height;
@@ -189,7 +193,7 @@ HRESULT Init()
 
 	//create camera
 	g_Camera = new Camera();
-	g_Camera->LookTo(XMFLOAT3(0, 0, -30), XMFLOAT3(0, 0, 1), XMFLOAT3(0, 1, 0));
+	g_Camera->LookTo(XMFLOAT3(0, 0, -10), XMFLOAT3(0, 0, 1), XMFLOAT3(0, 1, 0));
 	g_Camera->SetPerspective(PI / 4.0f, (float)g_Width, (float)g_Height, 0.1f, 10000.0f);
 
 	hr = InitializeBuffers();
@@ -207,7 +211,7 @@ HRESULT InitializeBuffers()
 
 
 	//Create vertex buffer
-	Vertex t_Vertices[3] =
+	Vertex t_Vertices[] =
 	{
 		{	XMFLOAT3(-0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT3(1.0f,0,0) },
 		{	XMFLOAT3(0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT3(0,1.0f,0)	},
@@ -215,7 +219,16 @@ HRESULT InitializeBuffers()
 	};
 
 	g_NumOfVertices = ARRAYSIZE(t_Vertices);
-	g_VertexBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(Vertex), 3, true, true, t_Vertices);
+	g_VertexBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(Vertex), g_NumOfVertices, true, true, t_Vertices);
+
+	//create Spheres
+	Sphere t_Spheres[]
+	{
+		{ XMFLOAT3(-5, 0, 0), 0.05,XMFLOAT3(1, 0, 0)},
+		{ XMFLOAT3(-5, 0, 5), 0.05,XMFLOAT3(0, 1, 1) },
+	};
+	g_NumOfSpheres = ARRAYSIZE(t_Spheres);
+	g_SphereBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(Sphere), g_NumOfSpheres, true, true, t_Spheres);
 
 
 	//create ray buffer
@@ -224,24 +237,46 @@ HRESULT InitializeBuffers()
 
 	//create per frame buffer
 	PerFrameBuffer p_FrameBuffer;
-	//p_FrameBuffer.invView = XMMatrixTranspose(g_Camera->GetView());
-	p_FrameBuffer.invProj = XMMatrixTranspose(g_Camera->GetProj());
+	p_FrameBuffer.View = XMMatrixTranspose(g_Camera->GetView());
+	p_FrameBuffer.Proj = XMMatrixTranspose(g_Camera->GetProj());
 	p_FrameBuffer.ScreenDimensions = XMFLOAT2((float)g_Height, (float)g_Width);
 	p_FrameBuffer.NumOfVertices = g_NumOfVertices;
-	p_FrameBuffer.filler = 0.0f;
+	p_FrameBuffer.NumOfSpheres = g_NumOfSpheres;
 
-	g_PerFrameBuffer = g_ComputeSys->CreateConstantBuffer(sizeof(PerFrameBuffer), &p_FrameBuffer);
+	g_PerFrameBuffer = g_ComputeSys->CreateConstantBuffer(sizeof(PerFrameBuffer), &p_FrameBuffer,D3D11_USAGE_DYNAMIC ,D3D11_CPU_ACCESS_WRITE);
 
 	return hr;
 }
 
 HRESULT Update(float deltaTime)
 {
+	g_Camera->Update();
+
 	return S_OK;
 }
 
+void UpdatePerFrameBuffer()
+{
+	PerFrameBuffer p_FrameBuffer;
+	p_FrameBuffer.View = XMMatrixTranspose(g_Camera->GetView());
+	p_FrameBuffer.Proj = XMMatrixTranspose(g_Camera->GetProj());
+	p_FrameBuffer.ScreenDimensions = XMFLOAT2((float)g_Height, (float)g_Width);
+	p_FrameBuffer.NumOfVertices = g_NumOfVertices;
+	p_FrameBuffer.NumOfSpheres = g_NumOfSpheres;
+
+	D3D11_MAPPED_SUBRESOURCE MappedResource;
+	PerFrameBuffer* p = nullptr;
+	if (SUCCEEDED(g_DeviceContext->Map(g_PerFrameBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource)))
+		*(PerFrameBuffer*)MappedResource.pData = p_FrameBuffer;
+
+	g_DeviceContext->Unmap(g_PerFrameBuffer, 0);
+	
+}
+
+
 HRESULT Render(float deltaTime)
 {
+	UpdatePerFrameBuffer();
 	//set textures
 	//ID3D11UnorderedAccessView* uav[] = { g_BackBufferUAV , g_VertexBuffer->GetUnorderedAccessView()};
 	//g_DeviceContext->CSSetUnorderedAccessViews(0, 2, uav, NULL);
@@ -279,8 +314,8 @@ HRESULT Render(float deltaTime)
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav2, NULL);
 
 	//set srv
-	ID3D11ShaderResourceView* srv2[] = { g_RayBuffer->GetResourceView(), g_VertexBuffer->GetResourceView() };
-	g_DeviceContext->CSSetShaderResources(0, 2, srv2);
+	ID3D11ShaderResourceView* srv2[] = { g_RayBuffer->GetResourceView(), g_VertexBuffer->GetResourceView(), g_SphereBuffer->GetResourceView()};
+	g_DeviceContext->CSSetShaderResources(0, 3, srv2);
 
 
 	g_DeviceContext->Dispatch(x, y, 1);
@@ -293,8 +328,8 @@ HRESULT Render(float deltaTime)
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav2, NULL);
 
 	//set srv
-	ID3D11ShaderResourceView* srv3[] = { nullptr, nullptr };
-	g_DeviceContext->CSSetShaderResources(0, 2, srv3);
+	ID3D11ShaderResourceView* srv3[] = { nullptr, nullptr, nullptr };
+	g_DeviceContext->CSSetShaderResources(0, 3, srv3);
 
 	g_Timer->Stop();
 
@@ -349,7 +384,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 		{
 			__int64 currTimeStamp = 0;
 			QueryPerformanceCounter((LARGE_INTEGER*)&currTimeStamp);
-			float dt = (currTimeStamp - prevTimeStamp) * secsPerCnt;
+			dt = (currTimeStamp - prevTimeStamp) * secsPerCnt;
 
 			//render
 			Update(dt);
@@ -411,6 +446,48 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
 	return S_OK;
 }
 
+void CheckKeys()
+{
+	if (GetAsyncKeyState('W') & 0x8000)
+	{
+		g_Camera->Walk(10.0f*dt);
+	}
+	if (GetAsyncKeyState('S') & 0x8000)
+	{
+		g_Camera->Walk(-10.0f*dt);
+	}
+	if (GetAsyncKeyState('A') & 0x8000)
+	{
+		g_Camera->Strafe(-10.0f*dt);
+	}
+	if (GetAsyncKeyState('D') & 0x8000)
+	{
+		g_Camera->Strafe(10.0f*dt);
+	}
+	if (GetAsyncKeyState('E') & 0x8000)
+	{
+		g_Camera->HoverY(10.0f*dt);
+	}
+	if (GetAsyncKeyState('Q') & 0x8000)
+	{
+		g_Camera->HoverY(-10.0f*dt);
+	}
+}
+
+void OnMouseMove(WPARAM btnStae, int x, int y)
+{
+	if (btnStae && MK_LBUTTON != 0)
+	{
+		float dx = XMConvertToRadians(0.25f*static_cast<float>(x - g_LastMousePos.x));
+		float dy = XMConvertToRadians(0.25f*static_cast<float>(y - g_LastMousePos.y));
+
+		g_Camera->Pitch(dy);
+		g_Camera->RotateY(dx);
+	}
+
+	g_LastMousePos.x = static_cast< float >(x);
+	g_LastMousePos.y = static_cast< float >(y);
+}
 
 //--------------------------------------------------------------------------------------
 // Called every time the application receives a message
@@ -432,7 +509,7 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 		break;
 
 	case WM_KEYDOWN:
-
+		CheckKeys();
 		switch(wParam)
 		{
 			case VK_ESCAPE:
@@ -441,6 +518,9 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 		}
 		break;
 
+	case WM_MOUSEMOVE:
+		OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}

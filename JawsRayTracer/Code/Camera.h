@@ -14,6 +14,14 @@ public:
 	void SetPerspective(float p_Angle, float p_Width, float p_Height, float p_Near, float p_Far);
 	void SetOrtogonal(float p_Width, float p_Height, float p_Near, float p_Far);
 
+	void Walk(float p_Amount);
+	void Strafe(float p_Amount);
+	void HoverY(float p_Amount);
+	void Pitch(float p_Dy);
+	void RotateY(float p_Dx);
+	void Update();
+
+
 	XMMATRIX GetViewProj();
 	XMMATRIX GetInvViewProj();
 	XMMATRIX GetView();
@@ -24,6 +32,13 @@ public:
 private:
 	XMFLOAT4X4 m_View;
 	XMFLOAT4X4 m_Proj;
+
+	XMFLOAT3 m_Position;
+	XMFLOAT3 m_Look;
+	XMFLOAT3 m_Up;
+	XMFLOAT3 m_Right;
+
+	bool m_HasMoved;
 	
 };
 

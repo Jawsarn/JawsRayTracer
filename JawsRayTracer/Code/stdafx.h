@@ -2,6 +2,7 @@
 #define _STDAFX__H
 
 #include <windows.h>
+#include <windowsx.h>
 #include <D3D11.h>
 #include <d3dCompiler.h>
 

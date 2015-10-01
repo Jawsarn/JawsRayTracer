@@ -5,11 +5,11 @@
 
 struct PerFrameBuffer
 {
-	//XMMATRIX invView;
-	XMMATRIX invProj;
+	XMMATRIX View;
+	XMMATRIX Proj;
 	XMFLOAT2 ScreenDimensions;
 	unsigned int NumOfVertices;
-	unsigned int filler;
+	unsigned int NumOfSpheres;
 };
 
 
@@ -18,6 +18,13 @@ struct Vertex
 	XMFLOAT3 Position;
 	XMFLOAT3 Normal;
 	//XMFLOAT2 TexCord;
+	XMFLOAT3 Color;
+};
+
+struct Sphere
+{
+	XMFLOAT3 Position;
+	float Radius;
 	XMFLOAT3 Color;
 };
 

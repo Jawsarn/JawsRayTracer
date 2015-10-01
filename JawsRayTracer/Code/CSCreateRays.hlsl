@@ -20,7 +20,7 @@ struct Ray
 
 cbuffer PerFrameBuffer : register(b0)
 {
-	//matrix View;
+	matrix View;
 	matrix Proj;
 	float2 ScreenDimensions; //width height
 	uint NumOfVertices;
@@ -48,12 +48,14 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	float2 screenSpaceRay = float2(t_ScreenPos.x / Proj._11, t_ScreenPos.y / Proj._22);
 
 	//either multiplie with inverse view here, or multiply the vertices with view?
+	float3 t_ViewSpacePos = mul(float4(t_ScreenPos, 0.0f, 1.0f), View).xyz;
 
+	float3 viewSpaceRay = mul(float4(screenSpaceRay, 1.0f, 0.0f), View).xyz;
 
 	Ray t_Ray;
 	//t_Ray.Direction = screenSpaceRay;
-	t_Ray.Position = float3(t_ScreenPos, 0);
-	t_Ray.Direction = float3(0.0f, 0.0f, 1.0f);
+	t_Ray.Position = t_ViewSpacePos;
+	t_Ray.Direction = normalize(viewSpaceRay);
 	t_Ray.Color = float3(0.0f, 1.0f, 0.0f);
 	outputRays[outIndex] = t_Ray;
 }
