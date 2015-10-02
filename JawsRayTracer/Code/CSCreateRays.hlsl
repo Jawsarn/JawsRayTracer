@@ -20,7 +20,7 @@ struct Ray
 
 cbuffer PerFrameBuffer : register(b0)
 {
-	matrix View;
+	matrix InvView;
 	matrix Proj;
 	float2 ScreenDimensions; //width height
 	uint NumOfVertices;
@@ -47,16 +47,19 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	//create ray in screenspace, this should now only have to be multiplied with a view matrix to get to view space?
 	float2 screenSpaceRay = float2(t_ScreenPos.x / Proj._11, t_ScreenPos.y / Proj._22);
 
-	//either multiplie with inverse view here, or multiply the vertices with view?
-	float3 t_ViewSpacePos = mul(float4(t_ScreenPos, 0.0f, 1.0f), View).xyz;
+	//near plane
+	float t_Near = Proj._43;
 
-	float3 viewSpaceRay = mul(float4(screenSpaceRay, 1.0f, 0.0f), View).xyz;
+	//either multiplie with inverse view here, or multiply the vertices with view?
+	float3 t_ViewSpacePos = mul(float4(t_ScreenPos, 2.0f, 1.0f), InvView).xyz;
+
+	float3 viewSpaceRay = mul(float4(screenSpaceRay, 1.0f, 0.0f), InvView).xyz;
 
 	Ray t_Ray;
 	//t_Ray.Direction = screenSpaceRay;
 	t_Ray.Position = t_ViewSpacePos;
 	t_Ray.Direction = normalize(viewSpaceRay);
-	t_Ray.Color = float3(0.0f, 1.0f, 0.0f);
+	t_Ray.Color = float3(0.0f, 0.0f, 0.0f);
 	outputRays[outIndex] = t_Ray;
 }
 

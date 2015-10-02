@@ -88,8 +88,9 @@ bool CheckSphereCollision(Ray mRay, uint index, out float t)
 	Sphere mSphere = Spheres[index];
 	float3 sphereToRay = (mRay.Position - mSphere.Position);
 	float lenStoR = length(sphereToRay);
+	float lenDotDist = dot(mRay.Direction, sphereToRay);
 
-	float underRoot = dot(mRay.Direction, dot(sphereToRay,sphereToRay)) - lenStoR*lenStoR + mSphere.Radius;
+	float underRoot = dot(lenDotDist, lenDotDist) - lenStoR*lenStoR + mSphere.Radius*mSphere.Radius;
 
 	if (underRoot < 0)
 	{

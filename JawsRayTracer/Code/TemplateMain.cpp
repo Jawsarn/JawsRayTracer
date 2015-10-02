@@ -224,8 +224,8 @@ HRESULT InitializeBuffers()
 	//create Spheres
 	Sphere t_Spheres[]
 	{
-		{ XMFLOAT3(-5, 0, 0), 0.05,XMFLOAT3(1, 0, 0)},
-		{ XMFLOAT3(-5, 0, 5), 0.05,XMFLOAT3(0, 1, 1) },
+		{ XMFLOAT3(-5, 0, 0), 2.0f,XMFLOAT3(1, 0, 0)},
+		{ XMFLOAT3(-5, 0, 5), 0.5f,XMFLOAT3(0, 1, 1) },
 	};
 	g_NumOfSpheres = ARRAYSIZE(t_Spheres);
 	g_SphereBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(Sphere), g_NumOfSpheres, true, true, t_Spheres);
@@ -237,7 +237,7 @@ HRESULT InitializeBuffers()
 
 	//create per frame buffer
 	PerFrameBuffer p_FrameBuffer;
-	p_FrameBuffer.View = XMMatrixTranspose(g_Camera->GetView());
+	p_FrameBuffer.InvView = XMMatrixTranspose(g_Camera->GetInvView());
 	p_FrameBuffer.Proj = XMMatrixTranspose(g_Camera->GetProj());
 	p_FrameBuffer.ScreenDimensions = XMFLOAT2((float)g_Height, (float)g_Width);
 	p_FrameBuffer.NumOfVertices = g_NumOfVertices;
@@ -258,7 +258,7 @@ HRESULT Update(float deltaTime)
 void UpdatePerFrameBuffer()
 {
 	PerFrameBuffer p_FrameBuffer;
-	p_FrameBuffer.View = XMMatrixTranspose(g_Camera->GetView());
+	p_FrameBuffer.InvView = XMMatrixTranspose(g_Camera->GetInvView());
 	p_FrameBuffer.Proj = XMMatrixTranspose(g_Camera->GetProj());
 	p_FrameBuffer.ScreenDimensions = XMFLOAT2((float)g_Height, (float)g_Width);
 	p_FrameBuffer.NumOfVertices = g_NumOfVertices;

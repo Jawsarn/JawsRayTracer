@@ -5,7 +5,7 @@
 
 struct PerFrameBuffer
 {
-	XMMATRIX View;
+	XMMATRIX InvView;
 	XMMATRIX Proj;
 	XMFLOAT2 ScreenDimensions;
 	unsigned int NumOfVertices;
