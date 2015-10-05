@@ -5,21 +5,25 @@ struct Ray
 {
 	float3 Position;
 	float3 Direction;
-	float3 Color;
 };
 
 struct Vertex
 {
 	float3 Position;
 	float3 Normal;
-	//float2 TexCord;
 	float3 Color;
+	//float2 TexCord;
 };
 
 struct Sphere
 {
 	float3 Position;
 	float Radius;
+	float3 Color;
+};
+
+struct ColorData
+{
 	float3 Color;
 };
 
@@ -97,7 +101,10 @@ bool CheckSphereCollision(Ray mRay, uint index, out float t)
 		return false;
 	}
 
-	t = -(dot(mRay.Direction,sphereToRay)) - underRoot;
+	float t1 = -(dot(mRay.Direction,sphereToRay)) - underRoot;
+	float t2 = -(dot(mRay.Direction, sphereToRay)) + underRoot;
+
+	t = min(t1, t2);
 
 	return true;
 }
@@ -113,14 +120,19 @@ void CS( uint3 threadID : SV_DispatchThreadID )
 
 	float3 finalColor = float3(0.0f, 0.0f, 0.0f);
 
+	float bestT = 10000000000000.0f;
 	//check closest triangle 
 	for (uint i = 0; i < NumOfVertices; i += 3)
 	{
 		float t, u, v;
 		if (CheckTriangleCollision(myRay, i, t, u, v))
 		{
-			float w = (1 - u - v);
-			finalColor += w * Vertices[i].Color + u * Vertices[i + 1].Color + v * Vertices[i + 2].Color;
+			if (t < bestT)
+			{
+				bestT = t;
+				float w = (1 - u - v);
+				finalColor = w * Vertices[i].Color + u * Vertices[i + 1].Color + v * Vertices[i + 2].Color;
+			}
 		}
 	}
 
@@ -130,8 +142,11 @@ void CS( uint3 threadID : SV_DispatchThreadID )
 		float t, u, v;
 		if (CheckSphereCollision(myRay, k, t))
 		{
-			float w = (1 - u - v);
-			finalColor += Spheres[k].Color;
+			if (t < bestT)
+			{
+				bestT = t;
+				finalColor = Spheres[k].Color;
+			}
 		}
 	}
 
