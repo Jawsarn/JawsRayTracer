@@ -11,8 +11,7 @@ struct Vertex
 {
 	float3 Position;
 	float3 Normal;
-	float3 Color;
-	//float2 TexCord;
+	float2 TexCord;
 };
 
 struct Sphere
@@ -24,7 +23,11 @@ struct Sphere
 
 struct ColorData
 {
-	float3 Color;
+	float distance;
+	float w;
+	float u;
+	float v;
+	int index;
 };
 
 cbuffer PerFrameBuffer : register(b0)
@@ -34,12 +37,16 @@ cbuffer PerFrameBuffer : register(b0)
 	float2 ScreenDimensions; //width height
 	uint NumOfVertices;
 	uint NumOfSpheres;
+	uint NumOfPointLights;
+	uint3 filler;
 };
 
-RWTexture2D<float4> output : register(u0);
+RWStructuredBuffer<ColorData> output : register(u0);
+
 StructuredBuffer<Ray> Rays : register(t0);
 StructuredBuffer<Vertex> Vertices : register(t1);
 StructuredBuffer<Sphere> Spheres : register(t2);
+
 
 //http://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates
 //kinda same https://courses.cs.washington.edu/courses/cse457/07sp/lectures/triangle_intersection.pdf
@@ -57,8 +64,12 @@ bool CheckTriangleCollision(Ray pRay, uint startIndex, out float t, out float u,
 
 	float3 pVec = cross(pRay.Direction, AtoC);
 	float det = dot(AtoB, pVec);
+
 	//if culling comment in
-	//if(det < kEpsilon) return false
+	/*if (det < kEpsilon)
+	{
+		return false;
+	}*/
 
 	if (abs(det) < kEpsilon)
 	{
@@ -83,6 +94,10 @@ bool CheckTriangleCollision(Ray pRay, uint startIndex, out float t, out float u,
 	}
 
 	t = dot(AtoC, qVec)*invDet;
+	if (t < 0)
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -117,39 +132,46 @@ void CS( uint3 threadID : SV_DispatchThreadID )
 	unsigned int index = threadID.y * ScreenDimensions.x + threadID.x;
 
 	Ray myRay = Rays[index];
+	ColorData tColData;
+	tColData.distance = 10000000000000.0f;
+	tColData.index = -1;
+	tColData.w = 0;
+	tColData.u = 0;
+	tColData.v = 0;
 
-	float3 finalColor = float3(0.0f, 0.0f, 0.0f);
-
-	float bestT = 10000000000000.0f;
 	//check closest triangle 
 	for (uint i = 0; i < NumOfVertices; i += 3)
 	{
 		float t, u, v;
 		if (CheckTriangleCollision(myRay, i, t, u, v))
 		{
-			if (t < bestT)
+			if (t < tColData.distance)
 			{
-				bestT = t;
-				float w = (1 - u - v);
-				finalColor = w * Vertices[i].Color + u * Vertices[i + 1].Color + v * Vertices[i + 2].Color;
+				tColData.distance = t;
+				tColData.w = (1 - u - v);
+				tColData.u = u;
+				tColData.v = v;
+				tColData.index = i;
+				//finalColor = w * Vertices[i].Color + u * Vertices[i + 1].Color + v * Vertices[i + 2].Color;
 			}
 		}
 	}
 
-	//check closest sphere 
-	for (uint k = 0; k < NumOfSpheres; k++)
-	{
-		float t, u, v;
-		if (CheckSphereCollision(myRay, k, t))
-		{
-			if (t < bestT)
-			{
-				bestT = t;
-				finalColor = Spheres[k].Color;
-			}
-		}
-	}
+	////check closest sphere 
+	//for (uint k = 0; k < NumOfSpheres; k++)
+	//{
+	//	float t, u, v;
+	//	if (CheckSphereCollision(myRay, k, t))
+	//	{
+	//		if (t < bestT)
+	//		{
+	//			bestT = t;
+	//			finalColor = Spheres[k].Color;
+	//		}
+	//	}
+	//}
 
 
-	output[threadID.xy] = float4(finalColor ,0.0f);
+
+	output[index] = tColData;
 }

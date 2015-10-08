@@ -12,6 +12,7 @@
 #include <DirectXMath.h>
 #include "Camera.h"
 #include "BufferHelp.h"
+#include "DDSTextureLoader.h"
 
 /*	DirectXTex library - for usage info, see http://directxtex.codeplex.com/
 	
@@ -54,6 +55,7 @@ ID3D11UnorderedAccessView*  g_BackBufferUAV		= NULL;  // compute output
 ComputeWrap*			g_ComputeSys			= NULL;
 ComputeShader*			g_CSCreateRays			= NULL;
 ComputeShader*			g_CSIntersect			= NULL;
+ComputeShader*			g_CSColoring			= NULL;
 
 D3D11Timer*				g_Timer					= NULL;
 Camera*					g_Camera				= NULL;
@@ -61,11 +63,18 @@ Camera*					g_Camera				= NULL;
 ComputeBuffer*			g_RayBuffer				= NULL;
 ComputeBuffer*			g_VertexBuffer			= NULL;
 ComputeBuffer*			g_SphereBuffer			= NULL;
+ComputeBuffer*			g_ColorDataBuffer		= NULL;
+ComputeBuffer*			g_PointLightBuffer		= NULL;
 ID3D11Buffer*			g_PerFrameBuffer		= NULL;
 
+ID3D11ShaderResourceView*	g_TextureOne			= NULL;
+
+
+ID3D11SamplerState*			g_SamplerStateWrap = NULL;
 
 UINT					g_NumOfVertices			= 0;
 UINT					g_NumOfSpheres			= 0;
+UINT					g_NumOfPointLights		= 0;
 float					dt						= 0;
 XMFLOAT2				g_LastMousePos			= XMFLOAT2(0, 0);
 
@@ -80,6 +89,7 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 HRESULT				Render(float deltaTime);
 HRESULT				Update(float deltaTime);
 HRESULT				InitializeBuffers();
+HRESULT				InitializeSampler();
 
 char* FeatureLevelToString(D3D_FEATURE_LEVEL featureLevel)
 {
@@ -189,6 +199,7 @@ HRESULT Init()
 	g_ComputeSys = new ComputeWrap(g_Device, g_DeviceContext);
 	g_CSCreateRays = g_ComputeSys->CreateComputeShader(_T("CSCreateRays.hlsl"), NULL, "CS", NULL);
 	g_CSIntersect = g_ComputeSys->CreateComputeShader(_T("CSIntersect.hlsl"), NULL, "CS", NULL);
+	g_CSColoring = g_ComputeSys->CreateComputeShader(_T("CSColoring.hlsl"), NULL, "CS", NULL);
 	g_Timer = new D3D11Timer(g_Device, g_DeviceContext);
 
 	//create camera
@@ -196,13 +207,46 @@ HRESULT Init()
 	g_Camera->LookTo(XMFLOAT3(0, 0, -10), XMFLOAT3(0, 0, 1), XMFLOAT3(0, 1, 0));
 	g_Camera->SetPerspective(PI / 4.0f, (float)g_Width, (float)g_Height, 0.1f, 10000.0f);
 
+	//create textuers
+	hr = CreateDDSTextureFromFile(g_Device, L"Jaws.dds", nullptr, &g_TextureOne);
+	if (FAILED(hr))
+		return hr;
+
 	hr = InitializeBuffers();
 	if (FAILED(hr))
 		return hr;
 
+	hr = InitializeSampler();
+	if (FAILED(hr))
+		return hr;
 
 
 	return S_OK;
+}
+
+HRESULT InitializeSampler()
+{
+	HRESULT hr = S_OK;
+
+	D3D11_SAMPLER_DESC sampDesc;
+	ZeroMemory(&sampDesc, sizeof(sampDesc));
+	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC; // D3D11_FILTER_ANISOTROPIC  D3D11_FILTER_MIN_MAG_MIP_LINEAR
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX; //D3D11_FLOAT32_MAX
+	sampDesc.MaxAnisotropy = 16; //why not max it out when we can?
+	hr = g_Device->CreateSamplerState(&sampDesc, &g_SamplerStateWrap);
+	if (FAILED(hr))
+		return hr;
+
+	g_DeviceContext->CSSetSamplers(0, 1, &g_SamplerStateWrap);
+
+	return hr;
 }
 
 HRESULT InitializeBuffers()
@@ -213,9 +257,13 @@ HRESULT InitializeBuffers()
 	//Create vertex buffer
 	Vertex t_Vertices[] =
 	{
-		{	XMFLOAT3(-0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT3(1.0f,0,0) },
-		{	XMFLOAT3(0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT3(0,1.0f,0)	},
-		{	XMFLOAT3(0,-0.25f,5.0f), XMFLOAT3(0,0,0), XMFLOAT3(0,0,1.0f) },
+		{	XMFLOAT3(-0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0.0f,0) },
+		{	XMFLOAT3(0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(1.0f,0.0f)},
+		{	XMFLOAT3(-0.25f,-0.5f,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0.0f,1.0) },
+
+		{ XMFLOAT3(0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(0.25f,-0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(-0.25f,-0.5f,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0.0f,1.0f) },
 	};
 
 	g_NumOfVertices = ARRAYSIZE(t_Vertices);
@@ -234,6 +282,19 @@ HRESULT InitializeBuffers()
 	//create ray buffer
 	g_RayBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(Ray), g_Height*g_Width, true, true, nullptr);
 
+	//create colordata buffer
+	g_ColorDataBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(ColorData), g_Height*g_Width, true, true, nullptr);
+
+	PointLight t_PointLights[]
+	{
+		{XMFLOAT3(0,0,0), 2.0f, XMFLOAT3(1,1,1)},
+
+	};
+
+
+	g_NumOfPointLights = ARRAYSIZE(t_PointLights);
+	//create pointlight buffer
+	g_PointLightBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(PointLight), g_NumOfPointLights, true, false, t_PointLights);
 
 	//create per frame buffer
 	PerFrameBuffer p_FrameBuffer;
@@ -242,6 +303,7 @@ HRESULT InitializeBuffers()
 	p_FrameBuffer.ScreenDimensions = XMFLOAT2((float)g_Height, (float)g_Width);
 	p_FrameBuffer.NumOfVertices = g_NumOfVertices;
 	p_FrameBuffer.NumOfSpheres = g_NumOfSpheres;
+	p_FrameBuffer.NumOfPointLights = 0;
 
 	g_PerFrameBuffer = g_ComputeSys->CreateConstantBuffer(sizeof(PerFrameBuffer), &p_FrameBuffer,D3D11_USAGE_DYNAMIC ,D3D11_CPU_ACCESS_WRITE);
 
@@ -310,7 +372,7 @@ HRESULT Render(float deltaTime)
 	g_CSIntersect->Set();
 
 	//set uav
-	ID3D11UnorderedAccessView* uav2[] = { g_BackBufferUAV };
+	ID3D11UnorderedAccessView* uav2[] = { g_ColorDataBuffer->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav2, NULL);
 
 	//set srv
@@ -321,16 +383,32 @@ HRESULT Render(float deltaTime)
 	g_DeviceContext->Dispatch(x, y, 1);
 
 
-	g_CSIntersect->Unset();
-	//stop time
 
-	ID3D11UnorderedAccessView* uav3[] = { nullptr };
-	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav2, NULL);
+
+	g_CSIntersect->Unset();
+	g_CSColoring->Set();
+
+	//set uav
+	ID3D11UnorderedAccessView* uav3[] = { g_BackBufferUAV };
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav3, NULL);
 
 	//set srv
-	ID3D11ShaderResourceView* srv3[] = { nullptr, nullptr, nullptr };
-	g_DeviceContext->CSSetShaderResources(0, 3, srv3);
+	ID3D11ShaderResourceView* srv3[] = { g_RayBuffer->GetResourceView(), g_VertexBuffer->GetResourceView(), g_ColorDataBuffer->GetResourceView(), g_PointLightBuffer->GetResourceView() ,g_TextureOne };
+	g_DeviceContext->CSSetShaderResources(0, 5, srv3);
 
+
+	g_DeviceContext->Dispatch(x, y, 1);
+	
+
+	ID3D11UnorderedAccessView* uav4[] = { nullptr };
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav4, NULL);
+
+	//set srv
+	ID3D11ShaderResourceView* srv4[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+	g_DeviceContext->CSSetShaderResources(0, 5, srv4);
+
+
+	//stop time
 	g_Timer->Stop();
 
 	
@@ -450,27 +528,27 @@ void CheckKeys()
 {
 	if (GetAsyncKeyState('W') & 0x8000)
 	{
-		g_Camera->Walk(10.0f*dt);
+		g_Camera->Walk(100.0f*dt);
 	}
 	if (GetAsyncKeyState('S') & 0x8000)
 	{
-		g_Camera->Walk(-10.0f*dt);
+		g_Camera->Walk(-100.0f*dt);
 	}
 	if (GetAsyncKeyState('A') & 0x8000)
 	{
-		g_Camera->Strafe(-10.0f*dt);
+		g_Camera->Strafe(-100.0f*dt);
 	}
 	if (GetAsyncKeyState('D') & 0x8000)
 	{
-		g_Camera->Strafe(10.0f*dt);
+		g_Camera->Strafe(100.0f*dt);
 	}
 	if (GetAsyncKeyState('E') & 0x8000)
 	{
-		g_Camera->HoverY(10.0f*dt);
+		g_Camera->HoverY(100.0f*dt);
 	}
 	if (GetAsyncKeyState('Q') & 0x8000)
 	{
-		g_Camera->HoverY(-10.0f*dt);
+		g_Camera->HoverY(-100.0f*dt);
 	}
 }
 

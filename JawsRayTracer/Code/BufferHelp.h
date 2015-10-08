@@ -10,6 +10,10 @@ struct PerFrameBuffer
 	XMFLOAT2 ScreenDimensions;
 	unsigned int NumOfVertices;
 	unsigned int NumOfSpheres;
+	unsigned int NumOfPointLights;
+	unsigned int filler1;
+	unsigned int filler2;
+	unsigned int filler3;
 };
 
 
@@ -17,8 +21,8 @@ struct Vertex
 {
 	XMFLOAT3 Position;
 	XMFLOAT3 Normal;
-	//XMFLOAT2 TexCord;
-	XMFLOAT3 Color;
+	XMFLOAT2 TexCord;
+	//XMFLOAT3 Color;
 };
 
 struct Sphere
@@ -32,4 +36,20 @@ struct Ray
 {
 	XMFLOAT3 Position;
 	XMFLOAT3 Direction;
+};
+
+struct ColorData
+{
+	float distance;
+	float w;
+	float u;
+	float v;
+	int index;
+};
+
+struct PointLight
+{
+	XMFLOAT3 Position;
+	float Range;
+	XMFLOAT3 Color;
 };

@@ -24,6 +24,8 @@ cbuffer PerFrameBuffer : register(b0)
 	float2 ScreenDimensions; //width height
 	uint NumOfVertices;
 	uint filler;
+	uint NumOfPointLights;
+	uint3 filler2;
 };
 
 
