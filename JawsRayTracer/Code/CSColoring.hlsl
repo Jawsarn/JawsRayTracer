@@ -158,7 +158,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 		float2 texCords = v0.TexCord * tColData.w + v1.TexCord * tColData.u + v2.TexCord * tColData.v;
 		float3 normal = normalize(v0.Normal * tColData.w + v1.Normal * tColData.u + v2.Normal * tColData.v);
 		float3 matColor = TextureOne.SampleLevel(Sampler, texCords, 0.0f);
-		finalColor = matColor * 0.3f;
+		finalColor = matColor * 0.1f;
 
 
 		//for each light, we look if any vertices block it
@@ -168,25 +168,28 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 			Ray tToLightRay;
 			PointLight tLight = PointLights[0];
 			tToLightRay.Direction = normalize(tLight.Position - hitPos );
-			tToLightRay.Position = hitPos;
+			tToLightRay.Position = hitPos + tToLightRay.Direction * kEpsilon* 500;
 
+			bool hit = false;
 
 			//check if we're going from the face outward
 			if (dot(tToLightRay.Direction, normal) > 0)
 			{
-				for (uint k = 0; k < NumOfVertices; k+=3)
+				for (uint k = 0; k < NumOfVertices && !hit; k+=3)
 				{
 					float t, u, v;
 					if (CheckTriangleCollision(tToLightRay, k, t, u,v))
 					{
-						finalColor = float3(0, 0, 0);
-					}
-					else
-					{
-						//finalColor += matColor*DirectIllumination(hitPos, normal, tLight);
+						hit = true;
 					}
 				}
 			}
+
+			if(!hit)
+			{
+				finalColor += matColor*DirectIllumination(hitPos, normal, tLight);
+			}
+
 		//}
 
 		////new ray here
