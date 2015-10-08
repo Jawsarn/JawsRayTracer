@@ -66,10 +66,10 @@ bool CheckTriangleCollision(Ray pRay, uint startIndex, out float t, out float u,
 	float det = dot(AtoB, pVec);
 
 	//if culling comment in
-	/*if (det < kEpsilon)
+	if (det < kEpsilon)
 	{
 		return false;
-	}*/
+	}
 
 	if (abs(det) < kEpsilon)
 	{

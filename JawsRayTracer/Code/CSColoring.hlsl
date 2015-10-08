@@ -65,7 +65,7 @@ bool CheckTriangleCollision(Ray pRay, uint startIndex, out float t, out float u,
 	//if culling comment in
 	/*if (det < kEpsilon)
 	{
-	return false;
+		return false;
 	}*/
 
 	if (abs(det) < kEpsilon)
@@ -99,6 +99,39 @@ bool CheckTriangleCollision(Ray pRay, uint startIndex, out float t, out float u,
 	return true;
 }
 
+float3 DirectIllumination(float3 pos, float3 norm, PointLight light)
+{
+	float3 lightPos = light.Position;
+
+	float3 lightVec = lightPos - pos;
+
+	float d = length(lightVec);
+	if (d > light.Range)
+	{
+		return float3(0, 0, 0);
+	}
+
+	//normalize vector
+	lightVec /= d;
+
+	//diffuse factor
+	float diffuseFactor = dot(lightVec, norm);
+
+	if (diffuseFactor < 0.0f)
+	{
+		return float3(0, 0, 0);
+	}
+
+	float att = pow(max(0.0f, 1.0 - (d / light.Range)), 2.0f);
+
+	//float3 toEye = normalize(-pos);
+	//float3 v = reflect(-lightVec, norm);
+
+
+	//float specFactor = pow(max(dot(v, toEye), 0.0f), 1.0f)*inSpec;
+
+	return (light.Color *att * (diffuseFactor/* + specFactor*/));
+}
 
 
 [numthreads(32, 32, 1)]
@@ -118,37 +151,42 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 		Vertex v2 = Vertices[tColData.index + 2];
 
 		//create normal from triangle
-		//float3 normal = normalize(cross(v1.Position - v0.Position, v2.Position - v0.Position));
-		//float3 hitPos = tRay.Position + tRay.Direction*tColData.distance;
+		
+		float3 hitPos = tRay.Position + tRay.Direction*tColData.distance;
 
 
 		float2 texCords = v0.TexCord * tColData.w + v1.TexCord * tColData.u + v2.TexCord * tColData.v;
-		finalColor = TextureOne.SampleLevel(Sampler, texCords, 0.0f);
+		float3 normal = normalize(v0.Normal * tColData.w + v1.Normal * tColData.u + v2.Normal * tColData.v);
+		float3 matColor = TextureOne.SampleLevel(Sampler, texCords, 0.0f);
+		finalColor = matColor * 0.3f;
 
 
+		//for each light, we look if any vertices block it
+		/*for (uint i = 0; i < NumOfPointLights; i++)
+		{*/
+			//we create a ray from our position and the target
+			Ray tToLightRay;
+			PointLight tLight = PointLights[0];
+			tToLightRay.Direction = normalize(tLight.Position - hitPos );
+			tToLightRay.Position = hitPos;
 
-		////for each light, we look if any vertices block it
-		//for (uint i = 0; i < NumOfPointLights; i++)
-		//{
-			////we create a ray from our position and the target
-			//Ray tToLightRay;
-			//PointLight tLight = PointLights[0];
-			//tToLightRay.Direction = normalize(tLight.Position - hitPos);
-			//tToLightRay.Position = hitPos;
 
-			//bool tInteresected = false;
-			////check if we're going from the face outward
-			//if (dot(tToLightRay.Direction, normal) > 0)
-			//{
-			//	for (uint k = 0; k < NumOfVertices; k+=3)
-			//	{
-			//		float t, u, v;
-			//		if (!tInteresected && CheckTriangleCollision(tToLightRay, k, t, u,v))
-			//		{
-			//			finalColor = float3(0, 0, 0);
-			//		}
-			//	}
-			//}
+			//check if we're going from the face outward
+			if (dot(tToLightRay.Direction, normal) > 0)
+			{
+				for (uint k = 0; k < NumOfVertices; k+=3)
+				{
+					float t, u, v;
+					if (CheckTriangleCollision(tToLightRay, k, t, u,v))
+					{
+						finalColor = float3(0, 0, 0);
+					}
+					else
+					{
+						//finalColor += matColor*DirectIllumination(hitPos, normal, tLight);
+					}
+				}
+			}
 		//}
 
 		////new ray here

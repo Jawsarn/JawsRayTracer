@@ -257,13 +257,22 @@ HRESULT InitializeBuffers()
 	//Create vertex buffer
 	Vertex t_Vertices[] =
 	{
-		{	XMFLOAT3(-0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0.0f,0) },
-		{	XMFLOAT3(0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(1.0f,0.0f)},
-		{	XMFLOAT3(-0.25f,-0.5f,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0.0f,1.0) },
+		{	XMFLOAT3(-0.25f,	0,		5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,0) },
+		{	XMFLOAT3(0.25f,		0,		5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f)},
+		{	XMFLOAT3(-0.25f,	-0.5f,	5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0) },
 
-		{ XMFLOAT3(0.25f,0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(1.0f,0.0f) },
-		{ XMFLOAT3(0.25f,-0,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(1.0f,1.0f) },
-		{ XMFLOAT3(-0.25f,-0.5f,5.0f), XMFLOAT3(0,0,0), XMFLOAT2(0.0f,1.0f) },
+		{	XMFLOAT3(0.25f,		0,		5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
+		{	XMFLOAT3(0.25f,		-0.5f,	5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,1.0f) },
+		{	XMFLOAT3(-0.25f,	-0.5f,	5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0f) },
+
+
+		{ XMFLOAT3(-2.25f,		2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,0) },
+		{ XMFLOAT3(2.25f,		2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(-2.25f,		-2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0) },
+
+		{ XMFLOAT3(2.25f,		2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(2.25f,		-2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(-2.25f,		-2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0f) },
 	};
 
 	g_NumOfVertices = ARRAYSIZE(t_Vertices);
@@ -287,7 +296,7 @@ HRESULT InitializeBuffers()
 
 	PointLight t_PointLights[]
 	{
-		{XMFLOAT3(0,0,0), 2.0f, XMFLOAT3(1,1,1)},
+		{XMFLOAT3(0,0,3), 100.0f, XMFLOAT3(1,1,1)},
 
 	};
 
@@ -414,7 +423,7 @@ HRESULT Render(float deltaTime)
 	
 
 	//swap backbuffer to front
-	if(FAILED(g_SwapChain->Present( 0, 0 )))
+	if(FAILED(g_SwapChain->Present( 1, 0 )))
 		return E_FAIL;
 
 	//debug info
