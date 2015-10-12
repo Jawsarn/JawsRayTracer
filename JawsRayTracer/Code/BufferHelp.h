@@ -49,6 +49,16 @@ struct ColorData
 
 struct PointLight
 {
+	PointLight()
+	{
+
+	}
+	PointLight(XMFLOAT3 pPos, float pRange, XMFLOAT3 pColor)
+	{
+		Position = pPos;
+		Range = pRange;
+		Color = pColor;
+	}
 	XMFLOAT3 Position;
 	float Range;
 	XMFLOAT3 Color;

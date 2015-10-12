@@ -162,11 +162,11 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 
 
 		//for each light, we look if any vertices block it
-		/*for (uint i = 0; i < NumOfPointLights; i++)
-		{*/
+		for (uint i = 0; i < NumOfPointLights; i++)
+		{
 			//we create a ray from our position and the target
 			Ray tToLightRay;
-			PointLight tLight = PointLights[0];
+			PointLight tLight = PointLights[i];
 			tToLightRay.Direction = normalize(tLight.Position - hitPos );
 			tToLightRay.Position = hitPos + tToLightRay.Direction * kEpsilon* 500;
 
@@ -190,7 +190,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 				finalColor += matColor*DirectIllumination(hitPos, normal, tLight);
 			}
 
-		//}
+		}
 
 		////new ray here
 		

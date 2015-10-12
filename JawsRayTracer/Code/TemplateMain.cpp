@@ -76,8 +76,9 @@ UINT					g_NumOfVertices			= 0;
 UINT					g_NumOfSpheres			= 0;
 UINT					g_NumOfPointLights		= 0;
 float					dt						= 0;
+float					gt						= 0;
 XMFLOAT2				g_LastMousePos			= XMFLOAT2(0, 0);
-
+PointLight*				g_Pointlights = NULL;
 
 int g_Width, g_Height;
 
@@ -294,16 +295,32 @@ HRESULT InitializeBuffers()
 	//create colordata buffer
 	g_ColorDataBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(ColorData), g_Height*g_Width, true, true, nullptr);
 
-	PointLight t_PointLights[]
+	g_NumOfPointLights = 10;
+	g_Pointlights = new PointLight[g_NumOfPointLights];
+ 
+	
+	g_Pointlights[0] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(1,0,0));
+	g_Pointlights[1] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(1,1,0));
+	g_Pointlights[2] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(0,1,0));
+	g_Pointlights[3] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(0,1,1));
+	g_Pointlights[4] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(0,0,1));
+	g_Pointlights[5] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(1,1,1));
+	g_Pointlights[6] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(1,0.5f,0.5f));
+	g_Pointlights[7] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(0.5f,1,0.5f));
+	g_Pointlights[8] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(0.5f,0.5f,1));
+	g_Pointlights[9] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(1,0.5f,1));
+
+
+	float tDivider = 3.0f;
+	for (size_t i = 0; i < g_NumOfPointLights; i++)
 	{
-		{XMFLOAT3(0,0,3), 100.0f, XMFLOAT3(1,1,1)},
+		g_Pointlights[i].Color = XMFLOAT3(g_Pointlights[i].Color.x / tDivider, g_Pointlights[i].Color.y / tDivider, g_Pointlights[i].Color.z / tDivider);
+	}
 
-	};
 
-
-	g_NumOfPointLights = ARRAYSIZE(t_PointLights);
+	
 	//create pointlight buffer
-	g_PointLightBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(PointLight), g_NumOfPointLights, true, false, t_PointLights);
+	g_PointLightBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(PointLight), g_NumOfPointLights, true, false, g_Pointlights, true);
 
 	//create per frame buffer
 	PerFrameBuffer p_FrameBuffer;
@@ -312,6 +329,7 @@ HRESULT InitializeBuffers()
 	p_FrameBuffer.ScreenDimensions = XMFLOAT2((float)g_Height, (float)g_Width);
 	p_FrameBuffer.NumOfVertices = g_NumOfVertices;
 	p_FrameBuffer.NumOfSpheres = g_NumOfSpheres;
+	p_FrameBuffer.NumOfPointLights = g_NumOfPointLights;
 	p_FrameBuffer.NumOfPointLights = 0;
 
 	g_PerFrameBuffer = g_ComputeSys->CreateConstantBuffer(sizeof(PerFrameBuffer), &p_FrameBuffer,D3D11_USAGE_DYNAMIC ,D3D11_CPU_ACCESS_WRITE);
@@ -319,8 +337,30 @@ HRESULT InitializeBuffers()
 	return hr;
 }
 
+void UpdateLights(float deltaTime)
+{
+	
+	float tWidth = 2.0f;
+	float tSpeed = 0.5f;
+	for (int i = 0; i < g_NumOfPointLights; i++)
+	{
+		g_Pointlights[i].Position = XMFLOAT3(sin(tSpeed*gt + (2.0f * PI *((float)i/ g_NumOfPointLights)))*tWidth, 0, cos(tSpeed*gt + (2.0f * PI *((float)i / g_NumOfPointLights)))*tWidth);
+	}
+	PointLight* tMapData = g_PointLightBuffer->Map<PointLight>();
+
+	for (size_t i = 0; i < g_NumOfPointLights; i++)
+	{
+		tMapData[i] = g_Pointlights[i];
+	}
+	
+	g_PointLightBuffer->Unmap();
+
+	g_PointLightBuffer->CopyFromStaging();
+}
+
 HRESULT Update(float deltaTime)
 {
+	UpdateLights(deltaTime);
 	g_Camera->Update();
 
 	return S_OK;
@@ -334,6 +374,7 @@ void UpdatePerFrameBuffer()
 	p_FrameBuffer.ScreenDimensions = XMFLOAT2((float)g_Height, (float)g_Width);
 	p_FrameBuffer.NumOfVertices = g_NumOfVertices;
 	p_FrameBuffer.NumOfSpheres = g_NumOfSpheres;
+	p_FrameBuffer.NumOfPointLights = g_NumOfPointLights;
 
 	D3D11_MAPPED_SUBRESOURCE MappedResource;
 	PerFrameBuffer* p = nullptr;
@@ -472,7 +513,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 			__int64 currTimeStamp = 0;
 			QueryPerformanceCounter((LARGE_INTEGER*)&currTimeStamp);
 			dt = (currTimeStamp - prevTimeStamp) * secsPerCnt;
-
+			gt += dt;
 			//render
 			Update(dt);
 			Render(dt);

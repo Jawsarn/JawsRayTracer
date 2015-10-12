@@ -39,6 +39,10 @@ public:
 	{ return _Staging; }
 	void CopyToStaging()
 	{ _D3DContext->CopyResource(_Staging, _Resource); }
+	void CopyFromStaging()
+	{
+		_D3DContext->CopyResource(_Resource, _Staging);
+	}
 
 	template<class T>
 	T* Map()
