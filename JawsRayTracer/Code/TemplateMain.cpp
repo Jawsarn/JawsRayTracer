@@ -267,13 +267,13 @@ HRESULT InitializeBuffers()
 		{	XMFLOAT3(-0.25f,	-0.5f,	5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0f) },
 
 
-		{ XMFLOAT3(-2.25f,		2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,0) },
-		{ XMFLOAT3(2.25f,		2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
-		{ XMFLOAT3(-2.25f,		-2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0) },
+		{ XMFLOAT3(-22.5f,		25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,0) },
+		{ XMFLOAT3(22.5f,		25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(-22.5f,		-25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0) },
 
-		{ XMFLOAT3(2.25f,		2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
-		{ XMFLOAT3(2.25f,		-2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,1.0f) },
-		{ XMFLOAT3(-2.25f,		-2.5f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0f) },
+		{ XMFLOAT3(22.5f,		25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(22.5f,		-25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(-22.5f,		-25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0f) },
 	};
 
 	g_NumOfVertices = ARRAYSIZE(t_Vertices);
@@ -299,16 +299,16 @@ HRESULT InitializeBuffers()
 	g_Pointlights = new PointLight[g_NumOfPointLights];
  
 	
-	g_Pointlights[0] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(1,0,0));
-	g_Pointlights[1] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(1,1,0));
-	g_Pointlights[2] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(0,1,0));
-	g_Pointlights[3] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(0,1,1));
-	g_Pointlights[4] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(0,0,1));
-	g_Pointlights[5] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(1,1,1));
-	g_Pointlights[6] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(1,0.5f,0.5f));
-	g_Pointlights[7] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(0.5f,1,0.5f));
-	g_Pointlights[8] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(0.5f,0.5f,1));
-	g_Pointlights[9] =  PointLight(XMFLOAT3(0, 0, 0), 100.0f, XMFLOAT3(1,0.5f,1));
+	g_Pointlights[0] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(1,0,0));
+	g_Pointlights[1] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(1,1,0));
+	g_Pointlights[2] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(0,1,0));
+	g_Pointlights[3] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(0,1,1));
+	g_Pointlights[4] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(0,0,1));
+	g_Pointlights[5] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(1,1,1));
+	g_Pointlights[6] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(1,0.5f,0.5f));
+	g_Pointlights[7] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(0.5f,1,0.5f));
+	g_Pointlights[8] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(0.5f,0.5f,1));
+	g_Pointlights[9] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(1,0.5f,1));
 
 
 	float tDivider = 3.0f;
@@ -331,6 +331,7 @@ HRESULT InitializeBuffers()
 	p_FrameBuffer.NumOfSpheres = g_NumOfSpheres;
 	p_FrameBuffer.NumOfPointLights = g_NumOfPointLights;
 	p_FrameBuffer.NumOfPointLights = 0;
+	p_FrameBuffer.CameraPosition = g_Camera->GetPosition();
 
 	g_PerFrameBuffer = g_ComputeSys->CreateConstantBuffer(sizeof(PerFrameBuffer), &p_FrameBuffer,D3D11_USAGE_DYNAMIC ,D3D11_CPU_ACCESS_WRITE);
 
@@ -340,7 +341,7 @@ HRESULT InitializeBuffers()
 void UpdateLights(float deltaTime)
 {
 	
-	float tWidth = 2.0f;
+	float tWidth = 10.0f;
 	float tSpeed = 0.5f;
 	for (int i = 0; i < g_NumOfPointLights; i++)
 	{
@@ -375,6 +376,7 @@ void UpdatePerFrameBuffer()
 	p_FrameBuffer.NumOfVertices = g_NumOfVertices;
 	p_FrameBuffer.NumOfSpheres = g_NumOfSpheres;
 	p_FrameBuffer.NumOfPointLights = g_NumOfPointLights;
+	p_FrameBuffer.CameraPosition = g_Camera->GetPosition();
 
 	D3D11_MAPPED_SUBRESOURCE MappedResource;
 	PerFrameBuffer* p = nullptr;

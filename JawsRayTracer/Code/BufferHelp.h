@@ -7,13 +7,13 @@ struct PerFrameBuffer
 {
 	XMMATRIX InvView;
 	XMMATRIX Proj;
+
 	XMFLOAT2 ScreenDimensions;
 	unsigned int NumOfVertices;
 	unsigned int NumOfSpheres;
+
+	XMFLOAT3 CameraPosition;
 	unsigned int NumOfPointLights;
-	unsigned int filler1;
-	unsigned int filler2;
-	unsigned int filler3;
 };
 
 

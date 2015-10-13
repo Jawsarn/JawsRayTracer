@@ -35,8 +35,8 @@ cbuffer PerFrameBuffer : register(b0)
 	float2 ScreenDimensions; //width height
 	uint NumOfVertices;
 	uint NumOfSpheres;
+	float3 CameraPosition;
 	uint NumOfPointLights;
-	uint3 filler;
 };
 
 RWTexture2D<float4> output : register(u0);
@@ -99,7 +99,7 @@ bool CheckTriangleCollision(Ray pRay, uint startIndex, out float t, out float u,
 	return true;
 }
 
-float3 DirectIllumination(float3 pos, float3 norm, PointLight light)
+float3 DirectIllumination(float3 pos, float3 norm, PointLight light, float inSpec)
 {
 	float3 lightPos = light.Position;
 
@@ -124,13 +124,13 @@ float3 DirectIllumination(float3 pos, float3 norm, PointLight light)
 
 	float att = pow(max(0.0f, 1.0 - (d / light.Range)), 2.0f);
 
-	//float3 toEye = normalize(-pos);
-	//float3 v = reflect(-lightVec, norm);
+	float3 toEye = normalize(CameraPosition - pos);
+	float3 v = reflect(-lightVec, norm);
 
 
-	//float specFactor = pow(max(dot(v, toEye), 0.0f), 1.0f)*inSpec;
+	float specFactor = pow(max(dot(v, toEye), 0.0f), 1.0f)*inSpec;
 
-	return (light.Color *att * (diffuseFactor/* + specFactor*/));
+	return (light.Color *att * (diffuseFactor + specFactor));
 }
 
 
@@ -168,7 +168,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 			Ray tToLightRay;
 			PointLight tLight = PointLights[i];
 			tToLightRay.Direction = normalize(tLight.Position - hitPos );
-			tToLightRay.Position = hitPos + tToLightRay.Direction * kEpsilon* 500;
+			tToLightRay.Position = hitPos + tToLightRay.Direction * kEpsilon* 5000;
 
 			bool hit = false;
 
@@ -187,7 +187,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 
 			if(!hit)
 			{
-				finalColor += matColor*DirectIllumination(hitPos, normal, tLight);
+				finalColor += matColor*DirectIllumination(hitPos, normal, tLight, 5.0f);
 			}
 
 		}

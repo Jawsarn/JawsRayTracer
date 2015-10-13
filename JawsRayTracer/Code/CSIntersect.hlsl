@@ -37,8 +37,8 @@ cbuffer PerFrameBuffer : register(b0)
 	float2 ScreenDimensions; //width height
 	uint NumOfVertices;
 	uint NumOfSpheres;
+	float3 CameraPosition;
 	uint NumOfPointLights;
-	uint3 filler;
 };
 
 RWStructuredBuffer<ColorData> output : register(u0);

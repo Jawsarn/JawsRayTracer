@@ -28,6 +28,7 @@ public:
 	XMMATRIX GetProj();
 	XMMATRIX GetInvView();
 	XMMATRIX GetInvProj();
+	XMFLOAT3 GetPosition() { return m_Position; };
 
 private:
 	XMFLOAT4X4 m_View;

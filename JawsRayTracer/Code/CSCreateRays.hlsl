@@ -23,9 +23,9 @@ cbuffer PerFrameBuffer : register(b0)
 	matrix Proj;
 	float2 ScreenDimensions; //width height
 	uint NumOfVertices;
-	uint filler;
+	uint NumOfSpheres;
+	float3 CameraPosition;
 	uint NumOfPointLights;
-	uint3 filler2;
 };
 
 
