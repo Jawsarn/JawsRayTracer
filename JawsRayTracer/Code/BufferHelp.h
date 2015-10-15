@@ -38,6 +38,7 @@ struct Ray
 	XMFLOAT3 Direction;
 	XMFLOAT3 Color;
 	int lastVertexIndex;
+	float reflectionFactor;
 };
 
 struct ColorData
@@ -47,9 +48,11 @@ struct ColorData
 	float v;
 	int index;
 	XMFLOAT3 hitPos;
-	float filler;
+	float reflectionFactor;
 	XMFLOAT3 direction;
 	float filler2;
+	XMFLOAT3 LastColor;
+	float filler3;
 };
 
 struct PointLight

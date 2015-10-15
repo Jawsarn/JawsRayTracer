@@ -17,6 +17,7 @@ struct Ray
 	float3 Direction;
 	float3 Color;
 	int lastVertexIndex;
+	float reflectionFactor;
 };
 
 cbuffer PerFrameBuffer : register(b0)
@@ -64,6 +65,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	t_Ray.Direction = normalize(viewSpaceRay);
 	t_Ray.Color = float3(0, 0, 0);
 	t_Ray.lastVertexIndex = -1;
+	t_Ray.reflectionFactor = 1.0f;
 
 	outputRays[outIndex] = t_Ray;
 }

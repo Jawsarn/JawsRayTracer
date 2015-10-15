@@ -5,6 +5,7 @@ struct Ray
 	float3 Direction;
 	float3 Color;
 	int lastVertexIndex;
+	float reflectionFactor;
 };
 
 struct Vertex
@@ -21,9 +22,11 @@ struct ColorData
 	float v;
 	int index;
 	float3 hitPos;
-	float filler;
+	float reflectionFactor;
 	float3 direction;
 	float filler2;
+	float3 LastColor;
+	float filler3;
 };
 
 struct PointLight
@@ -122,7 +125,7 @@ float3 DirectIllumination(float3 pos, float3 norm, PointLight light, float inSpe
 	//diffuse factor
 	float diffuseFactor = dot(lightVec, norm);
 
-	if (diffuseFactor < 0.0f)
+	if (diffuseFactor < 0.02f)
 	{
 		return float3(0, 0, 0);
 	}
@@ -150,6 +153,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	nextRay.Direction = float3(0, 0, 0);
 	nextRay.Color = float3(0, 0, 0);
 	nextRay.lastVertexIndex = -1;
+	nextRay.reflectionFactor = 0.5f;
 	
 	
 	float3 finalColor = float3(0, 0, 0);
@@ -169,6 +173,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 		float3 normal = normalize(v0.Normal * tColData.w + v1.Normal * tColData.u + v2.Normal * tColData.v);
 		float3 matColor = TextureOne.SampleLevel(Sampler, texCords, 0.0f);
 		finalColor = matColor * 0.1f;
+
 
 
 		//for each light, we look if any vertices block it
@@ -204,6 +209,9 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 			}
 
 		}
+
+		finalColor *= tColData.reflectionFactor;
+		finalColor += tColData.LastColor;
 
 		//maybe move this to the intersection one, because if we do we might be able to use create the rays while we color them?
 		////new ray here

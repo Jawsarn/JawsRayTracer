@@ -390,20 +390,20 @@ HRESULT InitializeBuffers()
 
 	float lightDistance = 50;
 
-	g_NumOfPointLights = 3;
+	g_NumOfPointLights = 10;
 	g_Pointlights = new PointLight[g_NumOfPointLights];
  
 	
 	g_Pointlights[0] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,0,0));
 	g_Pointlights[1] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,1,0));
 	g_Pointlights[2] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0,1,0));
-	//g_Pointlights[3] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0,1,1));
-	//g_Pointlights[4] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0,0,1));
-	//g_Pointlights[5] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,1,1));
-	//g_Pointlights[6] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,0.5f,0.5f));
-	//g_Pointlights[7] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0.5f,1,0.5f));
-	//g_Pointlights[8] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0.5f,0.5f,1));
-	//g_Pointlights[9] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,0.5f,1));
+	g_Pointlights[3] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0,1,1));
+	g_Pointlights[4] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0,0,1));
+	g_Pointlights[5] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,1,1));
+	g_Pointlights[6] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,0.5f,0.5f));
+	g_Pointlights[7] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0.5f,1,0.5f));
+	g_Pointlights[8] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0.5f,0.5f,1));
+	g_Pointlights[9] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,0.5f,1));
 
 
 	float tDivider = 1.0f;
@@ -441,8 +441,8 @@ HRESULT InitializeBuffers()
 void UpdateLights(float deltaTime)
 {
 	
-	float tWidth = 30.0f;
-	float tSpeed = 0.5f;
+	float tWidth = 20.0f;
+	float tSpeed = 0.1f;
 	for (int i = 0; i < g_NumOfPointLights; i++)
 	{
 		g_Pointlights[i].Position = XMFLOAT3(sin(tSpeed*gt + (2.0f * PI *((float)i/ g_NumOfPointLights)))*tWidth, 0, cos(tSpeed*gt + (2.0f * PI *((float)i / g_NumOfPointLights)))*tWidth);
@@ -586,7 +586,7 @@ HRESULT Render(float deltaTime)
 	
 	
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		IntersectRays(x, y);
 
