@@ -14,11 +14,12 @@ struct Vertex
 
 struct ColorData
 {
-	float distance;
 	float w;
 	float u;
 	float v;
 	int index;
+	float3 hitPos;
+	float filler;
 };
 
 struct PointLight
@@ -152,7 +153,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 
 		//create normal from triangle
 		
-		float3 hitPos = tRay.Position + tRay.Direction*tColData.distance;
+		float3 hitPos = tColData.hitPos;
 
 
 		float2 texCords = v0.TexCord * tColData.w + v1.TexCord * tColData.u + v2.TexCord * tColData.v;

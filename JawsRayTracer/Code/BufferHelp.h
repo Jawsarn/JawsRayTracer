@@ -40,11 +40,12 @@ struct Ray
 
 struct ColorData
 {
-	float distance;
 	float w;
 	float u;
 	float v;
 	int index;
+	XMFLOAT3 hitPos;
+	float filler;
 };
 
 struct PointLight

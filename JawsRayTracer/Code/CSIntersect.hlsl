@@ -23,11 +23,12 @@ struct Sphere
 
 struct ColorData
 {
-	float distance;
 	float w;
 	float u;
 	float v;
 	int index;
+	float3 hitPos;
+	float filler;
 };
 
 cbuffer PerFrameBuffer : register(b0)
@@ -133,21 +134,23 @@ void CS( uint3 threadID : SV_DispatchThreadID )
 
 	Ray myRay = Rays[index];
 	ColorData tColData;
-	tColData.distance = 10000000000000.0f;
 	tColData.index = -1;
 	tColData.w = 0;
 	tColData.u = 0;
 	tColData.v = 0;
+	tColData.hitPos = float3(0, 0, 0);
+	tColData.filler = 0;
 
+	float maxT = 10000000000000.0f;
 	//check closest triangle 
 	for (uint i = 0; i < NumOfVertices; i += 3)
 	{
 		float t, u, v;
 		if (CheckTriangleCollision(myRay, i, t, u, v))
 		{
-			if (t < tColData.distance)
+			if (t < maxT)
 			{
-				tColData.distance = t;
+				maxT = t;
 				tColData.w = (1 - u - v);
 				tColData.u = u;
 				tColData.v = v;
@@ -170,8 +173,10 @@ void CS( uint3 threadID : SV_DispatchThreadID )
 	//		}
 	//	}
 	//}
-
-
+	if (tColData.index != -1)
+	{
+		tColData.hitPos = myRay.Position + myRay.Direction*maxT;
+	}
 
 	output[index] = tColData;
 }
