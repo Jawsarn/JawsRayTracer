@@ -299,19 +299,19 @@ HRESULT InitializeBuffers()
 	g_Pointlights = new PointLight[g_NumOfPointLights];
  
 	
-	g_Pointlights[0] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(1,0,0));
-	g_Pointlights[1] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(1,1,0));
-	g_Pointlights[2] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(0,1,0));
-	g_Pointlights[3] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(0,1,1));
-	g_Pointlights[4] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(0,0,1));
-	g_Pointlights[5] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(1,1,1));
-	g_Pointlights[6] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(1,0.5f,0.5f));
-	g_Pointlights[7] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(0.5f,1,0.5f));
-	g_Pointlights[8] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(0.5f,0.5f,1));
-	g_Pointlights[9] =  PointLight(XMFLOAT3(0, 0, 0), 10.0f, XMFLOAT3(1,0.5f,1));
+	g_Pointlights[0] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(1,0,0));
+	g_Pointlights[1] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(1,1,0));
+	g_Pointlights[2] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(0,1,0));
+	g_Pointlights[3] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(0,1,1));
+	g_Pointlights[4] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(0,0,1));
+	g_Pointlights[5] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(1,1,1));
+	g_Pointlights[6] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(1,0.5f,0.5f));
+	g_Pointlights[7] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(0.5f,1,0.5f));
+	g_Pointlights[8] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(0.5f,0.5f,1));
+	g_Pointlights[9] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(1,0.5f,1));
 
 
-	float tDivider = 3.0f;
+	float tDivider = 2.0f;
 	for (size_t i = 0; i < g_NumOfPointLights; i++)
 	{
 		g_Pointlights[i].Color = XMFLOAT3(g_Pointlights[i].Color.x / tDivider, g_Pointlights[i].Color.y / tDivider, g_Pointlights[i].Color.z / tDivider);

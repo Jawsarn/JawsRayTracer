@@ -168,7 +168,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 			Ray tToLightRay;
 			PointLight tLight = PointLights[i];
 			tToLightRay.Direction = normalize(tLight.Position - hitPos );
-			tToLightRay.Position = hitPos + tToLightRay.Direction * kEpsilon* 5000;
+			tToLightRay.Position = hitPos;
 
 			bool hit = false;
 
@@ -177,10 +177,13 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 			{
 				for (uint k = 0; k < NumOfVertices && !hit; k+=3)
 				{
-					float t, u, v;
-					if (CheckTriangleCollision(tToLightRay, k, t, u,v))
+					if (k != tColData.index)
 					{
-						hit = true;
+						float t, u, v;
+						if (CheckTriangleCollision(tToLightRay, k, t, u, v))
+						{
+							hit = true;
+						}
 					}
 				}
 			}
