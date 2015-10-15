@@ -6,6 +6,7 @@ struct Ray
 	float3 Position;
 	float3 Direction;
 	float3 Color;
+	int lastVertexIndex;
 };
 
 struct Vertex
@@ -70,10 +71,10 @@ bool CheckTriangleCollision(Ray pRay, uint startIndex, out float t, out float u,
 	float det = dot(AtoB, pVec);
 
 	//if culling comment in
-	if (det < kEpsilon)
+	/*if (det < kEpsilon)
 	{
 		return false;
-	}
+	}*/
 
 	if (abs(det) < kEpsilon)
 	{
@@ -149,17 +150,20 @@ void CS( uint3 threadID : SV_DispatchThreadID )
 	//check closest triangle 
 	for (uint i = 0; i < NumOfVertices; i += 3)
 	{
-		float t, u, v;
-		if (CheckTriangleCollision(myRay, i, t, u, v))
+		if (myRay.lastVertexIndex != i)
 		{
-			if (t < maxT)
+			float t, u, v;
+			if (CheckTriangleCollision(myRay, i, t, u, v))
 			{
-				maxT = t;
-				tColData.w = (1 - u - v);
-				tColData.u = u;
-				tColData.v = v;
-				tColData.index = i;
-				//finalColor = w * Vertices[i].Color + u * Vertices[i + 1].Color + v * Vertices[i + 2].Color;
+				if (t < maxT)
+				{
+					maxT = t;
+					tColData.w = (1 - u - v);
+					tColData.u = u;
+					tColData.v = v;
+					tColData.index = i;
+					//finalColor = w * Vertices[i].Color + u * Vertices[i + 1].Color + v * Vertices[i + 2].Color;
+				}
 			}
 		}
 	}

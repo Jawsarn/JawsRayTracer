@@ -67,6 +67,9 @@ ComputeBuffer*			g_ColorDataBuffer		= NULL;
 ComputeBuffer*			g_PointLightBuffer		= NULL;
 ID3D11Buffer*			g_PerFrameBuffer		= NULL;
 
+ComputeTexture*			g_ColorTextureOne		= NULL;
+ComputeTexture*			g_ColorTextureTwo		= NULL;
+
 ID3D11ShaderResourceView*	g_TextureOne			= NULL;
 
 
@@ -205,7 +208,7 @@ HRESULT Init()
 
 	//create camera
 	g_Camera = new Camera();
-	g_Camera->LookTo(XMFLOAT3(0, 0, -10), XMFLOAT3(0, 0, 1), XMFLOAT3(0, 1, 0));
+	g_Camera->LookTo(XMFLOAT3(100, 150, -100), XMFLOAT3(-1, -1.5f, 1), XMFLOAT3(0, 1, 0));
 	g_Camera->SetPerspective(PI / 4.0f, (float)g_Width, (float)g_Height, 0.1f, 10000.0f);
 
 	//create textuers
@@ -254,26 +257,116 @@ HRESULT InitializeBuffers()
 {
 	HRESULT hr = S_OK;
 
+	float boxHalfSize = 40;
+	float smallBoxHalfSize = 5;
 
 	//Create vertex buffer
 	Vertex t_Vertices[] =
 	{
-		{	XMFLOAT3(-0.25f,	0,		5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,0) },
-		{	XMFLOAT3(0.25f,		0,		5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f)},
-		{	XMFLOAT3(-0.25f,	-0.5f,	5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0) },
+	
+		//smal box!
+		//back
+		{ XMFLOAT3(-smallBoxHalfSize,		smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(0.0f,0) },
+		{ XMFLOAT3(smallBoxHalfSize,			smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,		-smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(0.0f,1.0) },
 
-		{	XMFLOAT3(0.25f,		0,		5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
-		{	XMFLOAT3(0.25f,		-0.5f,	5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,1.0f) },
-		{	XMFLOAT3(-0.25f,	-0.5f,	5.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		-smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,	-smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(0.0f,1.0f) },
+
+		//right
+		{ XMFLOAT3(smallBoxHalfSize,		smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		-smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(1.0f,1.0f) },
+
+		{ XMFLOAT3(smallBoxHalfSize,		smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		-smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		-smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(0.0f,1.0f) },
+
+		//left
+		{ XMFLOAT3(-smallBoxHalfSize,		smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,		smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,		-smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(0.0f,1.0f) },
+
+		{ XMFLOAT3(-smallBoxHalfSize,		smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,		-smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,		-smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(0.0f,1.0f) },
+
+		//front
+		{ XMFLOAT3(smallBoxHalfSize,		smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,		smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,		-smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,1.0) },
+
+		{ XMFLOAT3(smallBoxHalfSize,		smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,		-smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		-smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0f) },
+
+		//bot
+		{ XMFLOAT3(-smallBoxHalfSize,		-smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		-smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		-smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(1.0f,1.0) },
+
+		{ XMFLOAT3(-smallBoxHalfSize,		-smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		-smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,		-smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(0.0f,1.0f) },
+
+		//top
+		{ XMFLOAT3(-smallBoxHalfSize,		smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,-1,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,-1,0), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,-1,0), XMFLOAT2(1.0f,1.0) },
+
+		{ XMFLOAT3(-smallBoxHalfSize,		smallBoxHalfSize,		smallBoxHalfSize), XMFLOAT3(0,-1,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(smallBoxHalfSize,		smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,-1,0), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(-smallBoxHalfSize,		smallBoxHalfSize,		-smallBoxHalfSize), XMFLOAT3(0,-1,0), XMFLOAT2(0.0f,1.0f) },
 
 
-		{ XMFLOAT3(-22.5f,		25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,0) },
-		{ XMFLOAT3(22.5f,		25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
-		{ XMFLOAT3(-22.5f,		-25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0) },
+		//big box!
+		//back
+		{ XMFLOAT3(-boxHalfSize,		boxHalfSize,		boxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,0) },
+		{ XMFLOAT3(boxHalfSize,			boxHalfSize,		boxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(-boxHalfSize,		-boxHalfSize,		boxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0) },
 
-		{ XMFLOAT3(22.5f,		25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
-		{ XMFLOAT3(22.5f,		-25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,1.0f) },
-		{ XMFLOAT3(-22.5f,		-25.0f,		10.0f), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0f) },
+		{ XMFLOAT3(boxHalfSize,		boxHalfSize,		boxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(boxHalfSize,		-boxHalfSize,		boxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(-boxHalfSize,	-boxHalfSize,		boxHalfSize), XMFLOAT3(0,0,-1), XMFLOAT2(0.0f,1.0f) },
+
+		//right
+		{ XMFLOAT3(boxHalfSize,		boxHalfSize,		boxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(boxHalfSize,		boxHalfSize,		-boxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(boxHalfSize,		-boxHalfSize,		-boxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(1.0f,1.0f) },
+
+		{ XMFLOAT3(boxHalfSize,		boxHalfSize,		boxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(boxHalfSize,		-boxHalfSize,		-boxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(boxHalfSize,		-boxHalfSize,		boxHalfSize), XMFLOAT3(-1,0,0), XMFLOAT2(0.0f,1.0f) },
+
+		//left
+		{ XMFLOAT3(-boxHalfSize,		boxHalfSize,		-boxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(-boxHalfSize,		boxHalfSize,		boxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(-boxHalfSize,		-boxHalfSize,		-boxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(0.0f,1.0f) },
+
+		{ XMFLOAT3(-boxHalfSize,		boxHalfSize,		boxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(-boxHalfSize,		-boxHalfSize,		boxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(-boxHalfSize,		-boxHalfSize,		-boxHalfSize), XMFLOAT3(1,0,0), XMFLOAT2(0.0f,1.0f) },
+
+		//front
+		{ XMFLOAT3(boxHalfSize,		boxHalfSize,		-boxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(-boxHalfSize,		boxHalfSize,		-boxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(-boxHalfSize,		-boxHalfSize,		-boxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(1.0f,1.0) },
+
+		{ XMFLOAT3(boxHalfSize,		boxHalfSize,		-boxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(-boxHalfSize,		-boxHalfSize,		-boxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(boxHalfSize,		-boxHalfSize,		-boxHalfSize), XMFLOAT3(0,0,1), XMFLOAT2(0.0f,1.0f) },
+
+		//bot
+		{ XMFLOAT3(-boxHalfSize,		-boxHalfSize,		boxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(boxHalfSize,		-boxHalfSize,		boxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(1.0f,0.0f) },
+		{ XMFLOAT3(boxHalfSize,		-boxHalfSize,		-boxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(1.0f,1.0) },
+
+		{ XMFLOAT3(-boxHalfSize,		-boxHalfSize,		boxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(0.0f,0.0f) },
+		{ XMFLOAT3(boxHalfSize,		-boxHalfSize,		-boxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(1.0f,1.0f) },
+		{ XMFLOAT3(-boxHalfSize,		-boxHalfSize,		-boxHalfSize), XMFLOAT3(0,1,0), XMFLOAT2(0.0f,1.0f) },
+
+
 	};
 
 	g_NumOfVertices = ARRAYSIZE(t_Vertices);
@@ -295,23 +388,25 @@ HRESULT InitializeBuffers()
 	//create colordata buffer
 	g_ColorDataBuffer = g_ComputeSys->CreateBuffer(COMPUTE_BUFFER_TYPE::STRUCTURED_BUFFER, sizeof(ColorData), g_Height*g_Width, true, true, nullptr);
 
-	g_NumOfPointLights = 10;
+	float lightDistance = 50;
+
+	g_NumOfPointLights = 3;
 	g_Pointlights = new PointLight[g_NumOfPointLights];
  
 	
-	g_Pointlights[0] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(1,0,0));
-	g_Pointlights[1] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(1,1,0));
-	g_Pointlights[2] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(0,1,0));
-	g_Pointlights[3] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(0,1,1));
-	g_Pointlights[4] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(0,0,1));
-	g_Pointlights[5] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(1,1,1));
-	g_Pointlights[6] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(1,0.5f,0.5f));
-	g_Pointlights[7] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(0.5f,1,0.5f));
-	g_Pointlights[8] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(0.5f,0.5f,1));
-	g_Pointlights[9] =  PointLight(XMFLOAT3(0, 0, 0), 20.0f, XMFLOAT3(1,0.5f,1));
+	g_Pointlights[0] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,0,0));
+	g_Pointlights[1] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,1,0));
+	g_Pointlights[2] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0,1,0));
+	//g_Pointlights[3] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0,1,1));
+	//g_Pointlights[4] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0,0,1));
+	//g_Pointlights[5] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,1,1));
+	//g_Pointlights[6] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,0.5f,0.5f));
+	//g_Pointlights[7] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0.5f,1,0.5f));
+	//g_Pointlights[8] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(0.5f,0.5f,1));
+	//g_Pointlights[9] =  PointLight(XMFLOAT3(0, 0, 0), lightDistance, XMFLOAT3(1,0.5f,1));
 
 
-	float tDivider = 2.0f;
+	float tDivider = 1.0f;
 	for (size_t i = 0; i < g_NumOfPointLights; i++)
 	{
 		g_Pointlights[i].Color = XMFLOAT3(g_Pointlights[i].Color.x / tDivider, g_Pointlights[i].Color.y / tDivider, g_Pointlights[i].Color.z / tDivider);
@@ -335,13 +430,18 @@ HRESULT InitializeBuffers()
 
 	g_PerFrameBuffer = g_ComputeSys->CreateConstantBuffer(sizeof(PerFrameBuffer), &p_FrameBuffer,D3D11_USAGE_DYNAMIC ,D3D11_CPU_ACCESS_WRITE);
 
+
+	//create texture buffers
+	g_ColorTextureOne = g_ComputeSys->CreateTexture(DXGI_FORMAT_R8G8B8A8_UNORM, g_Width, g_Height, 0, nullptr);
+	g_ColorTextureTwo = g_ComputeSys->CreateTexture(DXGI_FORMAT_R8G8B8A8_UNORM, g_Width, g_Height, 0, nullptr);
+
 	return hr;
 }
 
 void UpdateLights(float deltaTime)
 {
 	
-	float tWidth = 10.0f;
+	float tWidth = 30.0f;
 	float tSpeed = 0.5f;
 	for (int i = 0; i < g_NumOfPointLights; i++)
 	{
@@ -387,14 +487,8 @@ void UpdatePerFrameBuffer()
 	
 }
 
-
-HRESULT Render(float deltaTime)
+void CreateInitializeRays(UINT x, UINT y)
 {
-	UpdatePerFrameBuffer();
-	//set textures
-	//ID3D11UnorderedAccessView* uav[] = { g_BackBufferUAV , g_VertexBuffer->GetUnorderedAccessView()};
-	//g_DeviceContext->CSSetUnorderedAccessViews(0, 2, uav, NULL);
-	
 	ID3D11UnorderedAccessView* uav[] = { g_RayBuffer->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 
@@ -405,22 +499,24 @@ HRESULT Render(float deltaTime)
 	//set shader
 	g_CSCreateRays->Set();
 
-	
+
 	//start time
 	g_Timer->Start();
 
-	//calc num of thread groups
-	UINT x = ceil((float)g_Width / (float)THREAD_GROUP_SIZE_X);
-	UINT y = ceil((float)g_Height / (float)THREAD_GROUP_SIZE_Y);
+
 
 	//draw call
-	g_DeviceContext->Dispatch( x, y, 1 );
+	g_DeviceContext->Dispatch(x, y, 1);
 
 	uav[0] = nullptr;
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 
 	//unset stuff
 	g_CSCreateRays->Unset();
+}
+
+void IntersectRays(UINT x, UINT y)
+{
 	g_CSIntersect->Set();
 
 	//set uav
@@ -428,7 +524,7 @@ HRESULT Render(float deltaTime)
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav2, NULL);
 
 	//set srv
-	ID3D11ShaderResourceView* srv2[] = { g_RayBuffer->GetResourceView(), g_VertexBuffer->GetResourceView(), g_SphereBuffer->GetResourceView()};
+	ID3D11ShaderResourceView* srv2[] = { g_RayBuffer->GetResourceView(), g_VertexBuffer->GetResourceView(), g_SphereBuffer->GetResourceView() };
 	g_DeviceContext->CSSetShaderResources(0, 3, srv2);
 
 
@@ -445,19 +541,23 @@ HRESULT Render(float deltaTime)
 	g_DeviceContext->CSSetShaderResources(0, 3, srv2);
 
 	g_CSIntersect->Unset();
+}
+
+void ColorRays(UINT x, UINT y)
+{
 	g_CSColoring->Set();
 
 	//set uav
-	ID3D11UnorderedAccessView* uav3[] = { g_BackBufferUAV, g_RayBuffer->GetUnorderedAccessView ()};
+	ID3D11UnorderedAccessView* uav3[] = { g_BackBufferUAV, g_RayBuffer->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 2, uav3, NULL);
 
 	//set srv
-	ID3D11ShaderResourceView* srv3[] = {  g_VertexBuffer->GetResourceView(), g_ColorDataBuffer->GetResourceView(), g_PointLightBuffer->GetResourceView() ,g_TextureOne };
+	ID3D11ShaderResourceView* srv3[] = { g_VertexBuffer->GetResourceView(), g_ColorDataBuffer->GetResourceView(), g_PointLightBuffer->GetResourceView() ,g_TextureOne };
 	g_DeviceContext->CSSetShaderResources(0, 4, srv3);
 
 
 	g_DeviceContext->Dispatch(x, y, 1);
-	
+
 
 	uav3[0] = nullptr;
 	uav3[1] = nullptr;
@@ -469,7 +569,31 @@ HRESULT Render(float deltaTime)
 	srv3[2] = nullptr;
 	srv3[3] = nullptr;
 	g_DeviceContext->CSSetShaderResources(0, 4, srv3);
+}
 
+
+HRESULT Render(float deltaTime)
+{
+	UpdatePerFrameBuffer();
+	//set textures
+	//ID3D11UnorderedAccessView* uav[] = { g_BackBufferUAV , g_VertexBuffer->GetUnorderedAccessView()};
+	//g_DeviceContext->CSSetUnorderedAccessViews(0, 2, uav, NULL);
+	//calc num of thread groups
+	UINT x = ceil((float)g_Width / (float)THREAD_GROUP_SIZE_X);
+	UINT y = ceil((float)g_Height / (float)THREAD_GROUP_SIZE_Y);
+
+	CreateInitializeRays(x, y);
+	
+	
+
+	for (int i = 0; i < 2; i++)
+	{
+		IntersectRays(x, y);
+
+		ColorRays(x, y);
+	}
+	
+	
 
 	//stop time
 	g_Timer->Stop();

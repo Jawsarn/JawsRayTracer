@@ -4,6 +4,7 @@ struct Ray
 	float3 Position;
 	float3 Direction;
 	float3 Color;
+	int lastVertexIndex;
 };
 
 struct Vertex
@@ -145,6 +146,10 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 
 	ColorData tColData = ColorDatas[index];
 	Ray nextRay;
+	nextRay.Position = float3(0,0,0);
+	nextRay.Direction = float3(0, 0, 0);
+	nextRay.Color = float3(0, 0, 0);
+	nextRay.lastVertexIndex = -1;
 	
 	
 	float3 finalColor = float3(0, 0, 0);
@@ -205,6 +210,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 		nextRay.Position = hitPos;
 		nextRay.Direction = reflect(tColData.direction, normal);
 		nextRay.Color = finalColor;
+		nextRay.lastVertexIndex = tColData.index;
 		////reflect direction from ray by normal
 		//float3 newDir = reflect(tRay.Direction, normal);
 
