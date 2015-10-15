@@ -3,6 +3,7 @@ struct Ray
 {
 	float3 Position;
 	float3 Direction;
+	float3 Color;
 };
 
 struct Vertex
@@ -20,6 +21,8 @@ struct ColorData
 	int index;
 	float3 hitPos;
 	float filler;
+	float3 direction;
+	float filler2;
 };
 
 struct PointLight
@@ -197,9 +200,11 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 
 		}
 
+		//maybe move this to the intersection one, because if we do we might be able to use create the rays while we color them?
 		////new ray here
-		
-
+		nextRay.Position = hitPos;
+		nextRay.Direction = reflect(tColData.direction, normal);
+		nextRay.Color = finalColor;
 		////reflect direction from ray by normal
 		//float3 newDir = reflect(tRay.Direction, normal);
 
@@ -207,6 +212,6 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	}
 
 
-
+	Rays[index] = nextRay;
 	output[threadID.xy] = float4(finalColor , 0);
 }

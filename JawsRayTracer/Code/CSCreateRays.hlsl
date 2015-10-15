@@ -15,6 +15,7 @@ struct Ray
 {
 	float3 Position;
 	float3 Direction;
+	float3 Color;
 };
 
 cbuffer PerFrameBuffer : register(b0)
@@ -60,6 +61,7 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	//t_Ray.Direction = screenSpaceRay;
 	t_Ray.Position = t_ViewSpacePos;
 	t_Ray.Direction = normalize(viewSpaceRay);
+	t_Ray.Color = float3(0, 0, 0);
 
 	outputRays[outIndex] = t_Ray;
 }

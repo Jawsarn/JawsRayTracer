@@ -5,6 +5,7 @@ struct Ray
 {
 	float3 Position;
 	float3 Direction;
+	float3 Color;
 };
 
 struct Vertex
@@ -29,6 +30,8 @@ struct ColorData
 	int index;
 	float3 hitPos;
 	float filler;
+	float3 direction;
+	float filler2;
 };
 
 cbuffer PerFrameBuffer : register(b0)
@@ -140,6 +143,7 @@ void CS( uint3 threadID : SV_DispatchThreadID )
 	tColData.v = 0;
 	tColData.hitPos = float3(0, 0, 0);
 	tColData.filler = 0;
+	tColData.filler2 = 0;
 
 	float maxT = 10000000000000.0f;
 	//check closest triangle 
@@ -176,6 +180,8 @@ void CS( uint3 threadID : SV_DispatchThreadID )
 	if (tColData.index != -1)
 	{
 		tColData.hitPos = myRay.Position + myRay.Direction*maxT;
+		tColData.direction = myRay.Direction;
+
 	}
 
 	output[index] = tColData;
