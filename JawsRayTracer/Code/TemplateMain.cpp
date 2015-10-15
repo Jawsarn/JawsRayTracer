@@ -398,9 +398,6 @@ HRESULT Render(float deltaTime)
 	ID3D11UnorderedAccessView* uav[] = { g_RayBuffer->GetUnorderedAccessView() };
 	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
 
-	//clear SRV
-	ID3D11ShaderResourceView* srv[] = { nullptr , nullptr};
-	g_DeviceContext->CSSetShaderResources(0, 2, srv);
 
 	//set constant buffers
 	g_DeviceContext->CSSetConstantBuffers(0, 1, &g_PerFrameBuffer);
@@ -419,6 +416,9 @@ HRESULT Render(float deltaTime)
 	//draw call
 	g_DeviceContext->Dispatch( x, y, 1 );
 
+	uav[0] = nullptr;
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav, nullptr);
+
 	//unset stuff
 	g_CSCreateRays->Unset();
 	g_CSIntersect->Set();
@@ -435,29 +435,40 @@ HRESULT Render(float deltaTime)
 	g_DeviceContext->Dispatch(x, y, 1);
 
 
+	uav2[0] = nullptr;
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav2, NULL);
 
+	//set srv
+	srv2[0] = nullptr;
+	srv2[1] = nullptr;
+	srv2[2] = nullptr;
+	g_DeviceContext->CSSetShaderResources(0, 3, srv2);
 
 	g_CSIntersect->Unset();
 	g_CSColoring->Set();
 
 	//set uav
-	ID3D11UnorderedAccessView* uav3[] = { g_BackBufferUAV };
-	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav3, NULL);
+	ID3D11UnorderedAccessView* uav3[] = { g_BackBufferUAV, g_RayBuffer->GetUnorderedAccessView ()};
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 2, uav3, NULL);
 
 	//set srv
-	ID3D11ShaderResourceView* srv3[] = { g_RayBuffer->GetResourceView(), g_VertexBuffer->GetResourceView(), g_ColorDataBuffer->GetResourceView(), g_PointLightBuffer->GetResourceView() ,g_TextureOne };
-	g_DeviceContext->CSSetShaderResources(0, 5, srv3);
+	ID3D11ShaderResourceView* srv3[] = {  g_VertexBuffer->GetResourceView(), g_ColorDataBuffer->GetResourceView(), g_PointLightBuffer->GetResourceView() ,g_TextureOne };
+	g_DeviceContext->CSSetShaderResources(0, 4, srv3);
 
 
 	g_DeviceContext->Dispatch(x, y, 1);
 	
 
-	ID3D11UnorderedAccessView* uav4[] = { nullptr };
-	g_DeviceContext->CSSetUnorderedAccessViews(0, 1, uav4, NULL);
+	uav3[0] = nullptr;
+	uav3[1] = nullptr;
+	g_DeviceContext->CSSetUnorderedAccessViews(0, 2, uav3, NULL);
 
 	//set srv
-	ID3D11ShaderResourceView* srv4[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
-	g_DeviceContext->CSSetShaderResources(0, 5, srv4);
+	srv3[0] = nullptr;
+	srv3[1] = nullptr;
+	srv3[2] = nullptr;
+	srv3[3] = nullptr;
+	g_DeviceContext->CSSetShaderResources(0, 4, srv3);
 
 
 	//stop time

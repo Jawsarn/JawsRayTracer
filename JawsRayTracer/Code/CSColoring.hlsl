@@ -41,11 +41,11 @@ cbuffer PerFrameBuffer : register(b0)
 };
 
 RWTexture2D<float4> output : register(u0);
-StructuredBuffer<Ray> Rays : register(t0);
-StructuredBuffer<Vertex> Vertices : register(t1);
-StructuredBuffer<ColorData> ColorDatas : register(t2);
-StructuredBuffer<PointLight> PointLights : register(t3);
-Texture2D TextureOne : register(t4);
+RWStructuredBuffer<Ray> Rays : register(u1);
+StructuredBuffer<Vertex> Vertices : register(t0);
+StructuredBuffer<ColorData> ColorDatas : register(t1);
+StructuredBuffer<PointLight> PointLights : register(t2);
+Texture2D TextureOne : register(t3);
 
 SamplerState Sampler : register(s0);
 
@@ -141,7 +141,8 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 	unsigned int index = threadID.y * ScreenDimensions.x + threadID.x;
 
 	ColorData tColData = ColorDatas[index];
-	Ray tRay = Rays[index];
+	Ray nextRay;
+	
 	
 	float3 finalColor = float3(0, 0, 0);
 
@@ -204,6 +205,8 @@ void CS(uint3 threadID : SV_DispatchThreadID)
 
 
 	}
+
+
 
 	output[threadID.xy] = float4(finalColor , 0);
 }
