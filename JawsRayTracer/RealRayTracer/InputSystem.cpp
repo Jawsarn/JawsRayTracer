@@ -32,7 +32,7 @@ InputSystem::~InputSystem()
 
 }
 
-LRESULT CALLBACK InputSystem::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     PAINTSTRUCT ps;
     HDC hdc;

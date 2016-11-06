@@ -2,6 +2,8 @@
 #include "ComputeHelp.h"
 #include <stdexcept>
 
+
+
 GraphicsEngine* GraphicsEngine::m_singleton = nullptr;
 
 GraphicsEngine * GraphicsEngine::GetInstance()
@@ -12,19 +14,19 @@ GraphicsEngine * GraphicsEngine::GetInstance()
     return m_singleton;
 }
 
-void GraphicsEngine::Startup(WNDPROC p_winProc)
+void GraphicsEngine::Startup(int p_nCmdShow, WNDPROC p_winProc)
 {
     if (m_singleton != nullptr)
         throw std::runtime_error("Startup called multiple times");
 
-    m_singleton = new GraphicsEngine(p_winProc);
+    m_singleton = new GraphicsEngine(p_nCmdShow, p_winProc);
 }
 
-GraphicsEngine::GraphicsEngine(WNDPROC p_winProc)
+GraphicsEngine::GraphicsEngine(int p_nCmdShow, WNDPROC p_winProc)
 {
     HRESULT hr S_OK;
     
-    hr = InitializeWindow(p_winProc);
+    hr = InitializeWindow(p_nCmdShow, p_winProc);
     if (FAILED(hr))
         throw std::runtime_error("Startup error");
     
@@ -84,7 +86,7 @@ char* DriverTypeToString(D3D_DRIVER_TYPE driverType)
     return "Unknown";
 }
 
-HRESULT GraphicsEngine::InitializeWindow(WNDPROC p_winProc)
+HRESULT GraphicsEngine::InitializeWindow(int p_nCmdShow, WNDPROC p_winProc)
 {
     // Register class
     WNDCLASSEX wcex;
@@ -123,7 +125,7 @@ HRESULT GraphicsEngine::InitializeWindow(WNDPROC p_winProc)
         return E_FAIL;
     }
 
-    ShowWindow(m_handleWindow, nCmdShow);
+    ShowWindow(m_handleWindow, p_nCmdShow);
 
     return S_OK;
 }

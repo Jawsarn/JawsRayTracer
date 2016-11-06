@@ -30,13 +30,13 @@
 		}
 	}
 */
-#include <DirectXTex.h>
-
-#if defined( DEBUG ) || defined( _DEBUG )
-#pragma comment(lib, "DirectXTexD.lib")
-#else
-#pragma comment(lib, "DirectXTex.lib")
-#endif
+//#include <DirectXTex.h>
+//
+//#if defined( DEBUG ) || defined( _DEBUG )
+//#pragma comment(lib, "DirectXTexD.lib")
+//#else
+//#pragma comment(lib, "DirectXTex.lib")
+//#endif
 
 using namespace DirectX;
 

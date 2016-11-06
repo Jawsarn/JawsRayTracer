@@ -12,12 +12,15 @@ Game::~Game()
 {
 }
 
-void Game::Startup()
+
+
+
+void Game::Startup(int p_nCmdShow)
 {
     InputSystem::Startup();
     m_inputSystem = InputSystem::GetInstance();
-
-    GraphicsEngine::Startup(InputSystem::GetInstance()->WndProc);
+    
+    GraphicsEngine::Startup(p_nCmdShow, WndProc);
     m_graphicsEngine = GraphicsEngine::GetInstance();
 
     TimeSystem::Startup();

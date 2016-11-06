@@ -12,7 +12,7 @@ int WINAPI main( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine,
 {
     Game* game = new Game();
 
-    game->Startup();
+    game->Startup(nCmdShow);
     game->Run();
 }
 

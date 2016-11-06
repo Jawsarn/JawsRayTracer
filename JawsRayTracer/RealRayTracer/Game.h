@@ -9,7 +9,7 @@ public:
     Game();
     ~Game();
 
-    void Startup();
+    void Startup(int p_nCmdShow);
     void Run();
 
 private:

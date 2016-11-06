@@ -1,6 +1,10 @@
 #pragma once
 #include <d3d11_2.h>
 #include <stdint.h>
+#include <Windows.h>
+
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "d3dcompiler.lib")
 
 class ComputeWrap;
 class ComputeShader;
@@ -9,16 +13,16 @@ class GraphicsEngine
 {
 public:
     static GraphicsEngine* GetInstance();
-    static void Startup(WNDPROC p_winProc);
+    static void Startup(int p_nCmdShow, WNDPROC p_winProc);
 
 
 
 
 private:
     static GraphicsEngine* m_singleton;
-    GraphicsEngine(WNDPROC p_winProc);
+    GraphicsEngine(int p_nCmdShow, WNDPROC p_winProc);
     ~GraphicsEngine();
-    HRESULT InitializeWindow(WNDPROC p_winProc);
+    HRESULT InitializeWindow(int p_nCmdShow, WNDPROC p_winProc);
     HRESULT InitializeDirectX();
     HRESULT InitializeBackBuffer();
     HRESULT InitializeShaders();
