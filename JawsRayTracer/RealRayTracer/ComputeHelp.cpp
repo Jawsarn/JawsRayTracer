@@ -67,7 +67,7 @@ bool ComputeShader::Init(TCHAR* shaderFile, TCHAR* blobFileAppendix, char* pFunc
 		//hr = D3DX11CompileFromFile(shaderFile, pDefines, nullptr, pFunctionName, "cs_5_0", 
 			//dwShaderFlags, nullptr, nullptr, &pCompiledShader, &pErrorBlob, nullptr);
 
-		hr = D3DCompileFromFile(shaderFile, pDefines, nullptr, pFunctionName, "cs_5_0", 
+		hr = D3DCompileFromFile(shaderFile, pDefines, D3D_COMPILE_STANDARD_FILE_INCLUDE, pFunctionName, "cs_5_0",
 			dwShaderFlags, NULL, &pCompiledShader, &pErrorBlob);
 
 		if(hr == S_OK)
@@ -437,38 +437,38 @@ ID3D11Texture2D* ComputeWrap::CreateStagingTexture(ID3D11Texture2D* pTexture)
     return pStagingTex;
 }
 
-ID3D11Buffer* ComputeWrap::CreateConstantBuffer(UINT uSize, VOID* pInitData, char* debugName)
+ID3D11Buffer* ComputeWrap::CreateConstantBuffer(UINT uSize, VOID* pInitData, D3D11_USAGE cpuGpuUsage, UINT cpuAcessFlag, char* debugName)
 {
-	ID3D11Buffer* pBuffer = nullptr;
+    ID3D11Buffer* pBuffer = nullptr;
 
-	// setup creation information
-	D3D11_BUFFER_DESC cbDesc;
-	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    // setup creation information
+    D3D11_BUFFER_DESC cbDesc;
+    cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	bool addMod = uSize % 16 != 0 ? true : false;
-	cbDesc.ByteWidth = uSize + (addMod ? (16 - uSize % 16) : 0);
-	cbDesc.CPUAccessFlags = 0;
-	cbDesc.MiscFlags = 0;
-	cbDesc.StructureByteStride = 0;
-	cbDesc.Usage = D3D11_USAGE_DEFAULT;
+    bool addMod = uSize % 16 != 0 ? true : false;
+    cbDesc.ByteWidth = uSize + (addMod ? (16 - uSize % 16) : 0);
+    cbDesc.CPUAccessFlags = cpuAcessFlag;
+    cbDesc.MiscFlags = 0;
+    cbDesc.StructureByteStride = 0;
+    cbDesc.Usage = cpuGpuUsage;
 
-    if(pInitData)
+    if (pInitData)
     {
         D3D11_SUBRESOURCE_DATA InitData;
         InitData.pSysMem = pInitData;
         mD3DDevice->CreateBuffer(&cbDesc, &InitData, &pBuffer);
     }
-	else
-	{
+    else
+    {
         mD3DDevice->CreateBuffer(&cbDesc, nullptr, &pBuffer);
-	}
+    }
 
-	if(debugName && pBuffer)
-	{
-		SetDebugName(pBuffer, debugName);
-	}
+    if (debugName && pBuffer)
+    {
+        SetDebugName(pBuffer, debugName);
+    }
 
-	return pBuffer;
+    return pBuffer;
 }
 
 void ComputeWrap::SetDebugName(ID3D11DeviceChild* object, char* debugName)

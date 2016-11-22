@@ -6,12 +6,14 @@ class InputSystem
 public:
     static InputSystem* GetInstance();
     static void Startup();
+    void Update();
 
 
 
 private:
     InputSystem();
     ~InputSystem();
+
 
     static InputSystem* m_singleton;
 
